@@ -2,6 +2,7 @@
 
 #include "utils.h"
 #include "connect.h"
+#include "pfds.h"
 
 /* create_client */
 

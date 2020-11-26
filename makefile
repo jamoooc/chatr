@@ -17,10 +17,10 @@ CFLAGS = -I $(PATHS)
 LIB = -lncurses
 
 # tmp set filepaths
-_DEP = main.h utils.h message.h client.h connect.h
+_DEP = main.h utils.h message.h client.h connect.h pfds.h
 DEP = $(patsubst %,$(PATHS)%,$(_DEP))
 
-_OBJ = main.o utils.o message.o client.o connect.o
+_OBJ = main.o utils.o message.o client.o connect.o pfds.o
 OBJ = $(patsubst %,$(PATHS)%,$(_OBJ))
 
 BUILD_PATHS = $(PATHB) $(PATHD) $(PATHO) $(PATHR)

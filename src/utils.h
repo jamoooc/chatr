@@ -23,11 +23,5 @@ int set_host_username(char *input, args_t *args);
 // description
 int process_input(args_t *args);
 // description
-void insert_pfd(struct pollfd *pfds[], int new_fd, nfds_t *nfds, nfds_t *fd_count);
-// description
-void remove_pfd(struct pollfd pfds[], int i, nfds_t *fd_count);
-// description
-
-
 
 #endif /* UTILS_H */

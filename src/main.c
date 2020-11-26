@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "client.h"
 #include "connect.h"
+#include "pfds.h"
 
 
 /* main */
@@ -48,28 +49,15 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // linked lists
+  // linked lists and poll
   int client_socket;               // reused by accept_connection for pfds
   int server_socket;
   client_t *client_list = NULL;
   message_t *message_queue = NULL;
   nfds_t nfds = 3;                 // initial sizeof pfds array
   nfds_t fd_count = 0;
-  
-  // declare pfd array
-  struct pollfd *pfds = malloc(sizeof(*pfds) * nfds);
-  if (pfds == NULL) {
-    perror("pfds");
-    exit(EXIT_FAILURE);
-  }
+  struct pollfd *pfds = init_pfds(nfds);
 
-  // init pfd values
-  for (int i = 0; i < nfds; i++) {
-    pfds[i].fd = -1;
-    pfds[i].events = 0;
-    pfds[i].revents = 0;
-  }
-  
   // args object
   args_t *args = malloc(sizeof(args_t));
   args->quit = 1;

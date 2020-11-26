@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "message.h"
+#include "pfds.h"
 
 void init_server(int *server_socket, args_t *args); // probably don't need a ptr here....
 void accept_connection(int server_socket, args_t *args);

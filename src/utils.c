@@ -88,43 +88,6 @@ int set_host_username(char *input, args_t *args) {
 }
 
 
-/* insert_pfd */
-
-
-void insert_pfd(struct pollfd *pfds[], int new_fd, nfds_t *fd_count, nfds_t *nfds) {
-  // resize poll_fd array if necessary
-  if (*fd_count == *nfds) {
-    *nfds *= 2;
-    *pfds = realloc(*pfds, sizeof(**pfds) * (size_t)(*nfds));
-
-    // set new pfds null
-    for (nfds_t i = *fd_count; i < *nfds; i++) {
-      (*pfds)[i].fd = -1;
-      (*pfds)[i].revents = 0;
-    }
-  }
-  (*pfds)[*fd_count].fd = new_fd;
-  (*pfds)[*fd_count].events = POLLIN | POLLOUT;
-  (*pfds)[*fd_count].revents = 0;
-  
-  (*fd_count)++;
-}
-
-
-/* remove pfd */
-
-
-void remove_pfd(struct pollfd pfds[], int i, nfds_t *fd_count) {
-  // copy last pfd over el to remove
-  pfds[i] = pfds[*fd_count - 1];
-
-  // reset copied pfd and decrement count
-  pfds[*fd_count - 1].fd = -1; // negative fd ignored by poll
-  pfds[*fd_count - 1].revents = 0;
-  (*fd_count)--;
-}
-
-
 /* check for valid_port */
 
 // not sure about this, by definition anything but an unsigned int wont work? 0-65535
