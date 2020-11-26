@@ -9,7 +9,6 @@
 
 
 int main(int argc, char *argv[]) {
-  //
   options_t options = { 0, 0 }; // TODO maybe put a ptr to this in args_t??? what need from it?
   int opt = 0;                  // to hold argv char, set to -1 at argv EOF
   opterr = 0;
@@ -50,12 +49,11 @@ int main(int argc, char *argv[]) {
   }
 
   // linked lists
-  int client_socket;               // added to pfds then reused by accept_connection
+  int client_socket;               // reused by accept_connection for pfds
   int server_socket;
-  packet_t recv_packet;
-  client_t *client_list = NULL;    // clients linked list
-  message_t *message_queue = NULL; // linked list of pending messages
-  nfds_t nfds = 3;                 // sizeof pfds array, realloc'd as necessary
+  client_t *client_list = NULL;
+  message_t *message_queue = NULL;
+  nfds_t nfds = 3;                 // initial sizeof pfds array
   nfds_t fd_count = 0;
   
   // declare pfd array
@@ -64,7 +62,7 @@ int main(int argc, char *argv[]) {
     perror("pfds");
     exit(EXIT_FAILURE);
   }
-  
+
   // init pfd values
   for (int i = 0; i < nfds; i++) {
     pfds[i].fd = -1;
@@ -79,7 +77,9 @@ int main(int argc, char *argv[]) {
   args->server_socket = &server_socket;
   args->client_list = &client_list;
   args->message_queue = &message_queue;
-  args->pfds = pfds; // TODO separate struct for pfds?
+
+  // TODO separate struct for pfds?
+  args->pfds = pfds;
   args->active_socket = -1;
   args->fd_count = &fd_count;
   args->nfds = &nfds;
@@ -137,16 +137,16 @@ int main(int argc, char *argv[]) {
 
       // socket ready to recieve
       if (args->pfds[i].revents & POLLIN) {
-        receive_packet(args->pfds[i].fd, i, &recv_packet, args);
+        receive_packet(args->pfds[i].fd, i, args); // TODO stupid args
       }
 
-      // if message in queue & socket ready, send anything for that socket
+      // if message in queue & socket ready, send any msg for that socket
       if (*args->message_queue != NULL) {
         message_t *message = *args->message_queue;
         while (message != NULL) {
           if (args->pfds[i].revents & POLLOUT) {
-            if (message->socket == args->pfds[i].fd) {
-              transmit_packet(args->pfds[i].fd, args->message_queue);
+            if (message->socket == args->pfds[i].fd) { 
+              transmit_packet(args->pfds[i].fd, args->message_queue, message->client);
             }
           }
           message = message->next;

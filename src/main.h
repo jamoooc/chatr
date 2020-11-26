@@ -58,21 +58,12 @@ typedef struct options {
 
 /* packet_t */
 typedef struct packet {
-  char username[USERNAME_LEN];
+  char username[USERNAME_LEN]; // TODO, remove, this should be a client side job
   char body[BUFFER_LEN];
 } packet_t;
 
-/* message_t - queue messages linked list */
-typedef struct message {
-  int socket;
-  packet_t *packet;
-  struct message *next;
-} message_t;
-
-
-/* history_t - message history linked list */
+// gross names
 typedef struct history {
-  time_t timestamp;
   packet_t *packet;
   struct history *next;
 } history_t;
@@ -81,10 +72,20 @@ typedef struct history {
 typedef struct client {
   int socket;
   char username[USERNAME_LEN]; // host - set to IP if unset
-  char alias[USERNAME_LEN];
-  struct sockaddr_in addr;
+  char alias[USERNAME_LEN]; // pick one! same as username, sep field for ip
+  char ip_addr[INET6_ADDRSTRLEN]; // maybs dont need sockaddr...
+  history_t *history;
+  struct sockaddr_in addr; // whats in her I want???
   struct client *next;
 } client_t;
+
+/* message_t - queue messages linked list */
+typedef struct message {
+  int socket;
+  client_t *client;
+  packet_t *packet;
+  struct message *next;
+} message_t;
 
 /* arguments */
 typedef struct args {
@@ -96,6 +97,7 @@ typedef struct args {
   int                 active_socket;
   char                username[USERNAME_LEN]; // host
   char                active_username[USERNAME_LEN];
+  client_t            *active_client; // TODO is better than all the searching!
   char                active_alias[USERNAME_LEN];
   struct pollfd       *pfds; // pfd struct needed
   nfds_t              *nfds;

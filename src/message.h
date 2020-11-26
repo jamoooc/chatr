@@ -3,6 +3,8 @@
 
 #include "main.h"
 
+
+
 // /* packet_t */
 // typedef struct packet {
 //   char username[USERNAME_LEN];
@@ -23,9 +25,11 @@
 //   packet_t *packet;
 //   struct history *next;
 // } history_t;
-
-
-message_t *create_message(int socket, char *username, char *message_body);
+void insert_history(int socket, packet_t *packet, client_t *client);
+void print_history(client_t *client);
+// void insert_history(history_head_t *h, packet_t *msg);
+// void insert_history(history_head_t *h, packet_t *msg, int i);
+message_t *create_message(int socket, char *message_body, client_t *client);
 void append_message(message_t *new_message, message_t **message_queue);
 void remove_message(message_t *message, message_t **message_queue);
 void print_messages(message_t **message_queue);

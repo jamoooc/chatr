@@ -52,7 +52,8 @@ int process_input(args_t *args) { // message_queue **
       // create message for queue
       if (args->active_socket > MIN_CLIENT_SOCK) {
         // create message
-        message_t *message = create_message(args->active_socket, args->username, input_buffer);
+        // TODO review this - now passing active client to create msg, seems ok
+        message_t *message = create_message(args->active_socket, input_buffer, args->active_client);
         append_message(message, args->message_queue);
       } else {
         printf("No active client.\n");
@@ -163,7 +164,6 @@ void remove_newline(char *input) {
     input[i] = '\0';
   }
 }
-
 
 
 /* assist - print help messages */

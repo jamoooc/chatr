@@ -37,8 +37,6 @@ void append_client(client_t *new_client, client_t **client) {
 }
 
 
-
-
 /* add_client */
 
 
@@ -68,7 +66,7 @@ int add_client(char *input, args_t *args) {
   memset(&client_addr, 0, sizeof(client_addr));
   client_addr.sin_family = AF_INET;
   client_addr.sin_port = htons(atoi(port));
-  rv = inet_pton(AF_INET, ip, &(client_addr.sin_addr.s_addr));
+  rv = inet_pton(AF_INET, ip, &(client_addr.sin_addr.s_addr)); // TODO extra brakcet?
   
   printf("RV %i\n", rv);
 
@@ -133,7 +131,7 @@ int select_active_client(char *input_user, args_t *args) {
   remove_first_char(input_user);
   remove_newline(input_user);
 
-  // validate input username
+  // validate input username TODO check min max lens etc. too
   int input_length = strlen(input_user);
   for (int i = 0; i < input_length; i++) {
     if (isalnum(input_user[i] == 0)) {
@@ -142,6 +140,8 @@ int select_active_client(char *input_user, args_t *args) {
     }
   }
 
+// TODO - WONT BE SETTING ALL THIS, just have active_client ptr
+// can probably change the ifs
   // find client in ll
   client_t *client = *args->client_list; 
   while (client != NULL) {
@@ -151,6 +151,7 @@ int select_active_client(char *input_user, args_t *args) {
       strcpy(args->active_username, input_user);
       strcpy(args->active_alias, client->alias);
       args->active_socket = client->socket;
+      args->active_client = client;
       printf("%s: %s.\n", ACTIVE_CLIENT_SET, input_user);
       break;
     } 
@@ -160,6 +161,7 @@ int select_active_client(char *input_user, args_t *args) {
       strcpy(args->active_username, client->username);
       strcpy(args->active_alias, input_user);
       args->active_socket = client->socket;
+      args->active_client = client;
       printf("%s: %s.\n", ACTIVE_CLIENT_SET, input_user);
       break;
     }

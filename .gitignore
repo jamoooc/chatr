@@ -1,5 +1,7 @@
 *.o
+*.d
 TODO.md
+README.md
 chatr
 make/
 .DS_Store
