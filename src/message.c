@@ -1,38 +1,74 @@
 #include "message.h"
 #include "utils.h"
 
-// TODO better name - 
-void insert_history(int socket, packet_t *packet, client_t *client) {
+// TODO better name
+void insert_history(int socket, packet_t *packet, client_t *client, args_t *args, WINDOW **windows) {
   // create new history item
   history_t *new_msg = malloc(sizeof(history_t));
-  if (new_msg == NULL) {
+  if (new_msg == NULL) { // make helper func for these
     perror("malloc insert_history");
     exit(EXIT_FAILURE);
   }
   memset(new_msg, 0, sizeof(history_t));
-
+  new_msg->packet = packet;
+  new_msg->next = NULL;
+  
   // most recent item to top of LL for simple access
   history_t *prev_head = client->history;
   new_msg->packet = packet;
   new_msg->next = prev_head;
   client->history = new_msg;
 
-  printf("client history: %s\n", strlen(client->alias) > 0 ? client->alias : client->username);
-  print_history(client);
+  // append_history(new_msg, client->history);
+  // if (strcmp(client->username, args->active_username)) {
+    print_history(client->history, windows);
+  // }
 }
 
 
-// TEMP print_history
+/* append_history */
 
-void print_history(client_t *client) {
-  history_t *msg = client->history;
-  while (msg != NULL) {
-    printf("%s\n", msg->packet->body);
+
+// void append_history(history_t *new, history_t *history) {
+//   history_t *tmp = history;
+//   while (tmp != NULL) {
+//     tmp = tmp->next;
+//   }
+//   new->next = tmp;
+// }
+
+
+// print_history
+
+// review this whole func, dbl ptrs history please
+void print_history(history_t *history, WINDOW **windows) {
+  history_t *msg = history;
+  werase(windows[HISTORY]);
+
+  // TODO set y and counter to LINES * 0.8
+  int y = 7, x = 1;
+  int counter = 7;
+
+  // offset for printing msgs if total msgs < 7 
+  while (msg != NULL && counter >= 0) {
     msg = msg->next;
+    counter--;
   }
+
+  msg = history; // reset ptr
+  while (msg != NULL && counter < 8) {
+    mvwprintw(windows[HISTORY], y - counter, x, "%s\n", msg->packet->body);
+    msg = msg->next;
+    y--;
+  }
+
+  box(windows[HISTORY], 0, 0);
+  wrefresh(windows[HISTORY]);
 }
 
-// TODO free_history
+
+// TODO 
+// void free_message_history(void) { }
 
 
 /* create_message */
@@ -59,7 +95,6 @@ message_t *create_message(int socket, char *message_body, client_t *client) {
   message->client = client;
   message->socket = socket;
   message->packet = packet;
-  message->next = NULL;
 
   return message;
 }
@@ -96,7 +131,7 @@ void remove_message(message_t *message, message_t **message_queue) {
 
 /* print message */
 
-
+// TODO REMOVE
 void print_messages(message_t **message_queue) {
   // printf("message_queue\n"); // DEL
   message_t *tmp = *message_queue;

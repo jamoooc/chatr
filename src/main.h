@@ -32,6 +32,9 @@
 #define USERNAME_LEN 30
 #define BUFFER_LEN 256
 #define MIN_CLIENT_SOCK 2
+#define N_WINDOWS 4         // initial val, realloc'd as necessary
+#define N_PFDS 3            // initial val, realloc'd as necessary
+
 
 // string constants
 #define DEFAULT_PROGNAME "chatr"
@@ -45,6 +48,14 @@
 extern int errno; // used by std C lib for error communication
 extern char *optarg; // ptr to option argument
 extern int opterr, optind; // used by getopt()
+
+// not sure about these nams
+enum WINDOW_INDEX {
+  CLIENTS,
+  INFO,
+  HISTORY,
+  INPUT,
+};
 
 
 /* structs */
@@ -77,7 +88,7 @@ typedef struct client {
   history_t *history;
   struct sockaddr_in addr; // whats in her I want???
   struct client *next;
-} client_t;
+} client_t; 
 
 /* message_t - queue messages linked list */
 typedef struct message {

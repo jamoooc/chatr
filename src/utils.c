@@ -6,20 +6,24 @@
 /* process_input */
 
 
-int process_input(args_t *args) { // message_queue **
-  // get input from stdin
+int process_input(args_t *args, WINDOW **windows) {
+
   char input_buffer[BUFFER_LEN];
-  if (!fgets(input_buffer, BUFFER_LEN, stdin)) {
-    printf("fgets error");
-    exit(EXIT_FAILURE);
-  };
+  wgetnstr(windows[INPUT], input_buffer, BUFFER_LEN);
+  
+  werase(windows[INPUT]);
+  box(windows[INPUT], 0, 0);
+  wmove(windows[INPUT], 1, 1);
+  wrefresh(windows[INPUT]);
   
   // check for exit condition
-  if (strcmp(input_buffer, "quit\n") == 0) {
-    printf("I QUIT!\n"); 
+  if (strcmp(input_buffer, "quit") == 0) {
+    wprintw(windows[INFO], EXIT_MESSAGE);
+    wrefresh(windows[INFO]);
     args->quit = 0;
     return 0;
     // TODO: FREE EVERYTHING
+    // TODO: PRINT LEAVING MESSAGE
     // TODO exit gracefully
     // exit(EXIT_SUCCESS);
   }
@@ -27,19 +31,21 @@ int process_input(args_t *args) { // message_queue **
   // check for user change, username, or create new message SWITCH?
   switch (input_buffer[0]) {
     case '@':
-      select_active_client(input_buffer, args);
+      select_active_client(input_buffer, args, windows);
       break;
     case '$':
-      set_host_username(input_buffer, args);
+      set_host_username(input_buffer, args, windows);
       break;
     case '#':
-      set_client_alias(input_buffer, args);
+      set_client_alias(input_buffer, args, windows); // TODO change to set_client_username
       break;
     case '!':
-      add_client(input_buffer, args);
+      add_client(input_buffer, args, windows);
       break;
     case '/':
-      assist(input_buffer, args);
+      // TODO quit should be in here
+      // TODO add this back in a when u sort out your life
+      // assist(input_buffer, args);
       break;
     default:
       // if username not set, set to IP addr
@@ -56,7 +62,11 @@ int process_input(args_t *args) { // message_queue **
         message_t *message = create_message(args->active_socket, input_buffer, args->active_client);
         append_message(message, args->message_queue);
       } else {
-        printf("No active client.\n");
+        werase(windows[INFO]);
+        mvwprintw(windows[INFO], 1, 1, "No active client.\n");
+        box(windows[INFO], 0, 0);
+        wrefresh(windows[INFO]);
+        wrefresh(windows[INPUT]);
       }
     break;
   }
@@ -67,7 +77,7 @@ int process_input(args_t *args) { // message_queue **
 /* set_host_username */
 
 
-int set_host_username(char *input, args_t *args) {
+int set_host_username(char *input, args_t *args, WINDOW **windows) {
   // remove '$' and '\n' before set username;
   remove_first_char(input);
   remove_newline(input);
@@ -76,14 +86,18 @@ int set_host_username(char *input, args_t *args) {
   int length = strlen(input);
   for (int i = 0; i < length; i++) {
     if (isalnum(input[i] == 0)) {
-      printf("%s.\n", INVALID_USERNAME);
+      // TODO maybe clearing screen here etc.. 
+      // need a func for reset screen
+      wprintw(windows[INFO], "%s.\n", INVALID_USERNAME);
+      wrefresh(windows[INFO]);
       return 1;
     }
   }
   
   // set username
   strcpy(args->username, input);
-  printf("Host username set to: %s.\n", args->username);
+  wprintw(windows[INFO], "Host username set to: %s.\n", args->username);
+  wrefresh(windows[INFO]);
   return 0;
 }
 
@@ -129,16 +143,21 @@ void remove_newline(char *input) {
 }
 
 
+
+// TODO
+// void remove_whitespace() { }
+
+
 /* assist - print help messages */
 
 // RENAME this 
-void assist(char *input, args_t *args) {
+void assist(char *input, args_t *args, WINDOW **windows) {
   switch (input[1]) {
     case 'm':
       print_messages(args->message_queue);
       break;
     case 'c': 
-      print_clients(args->client_list);
+      print_clients(args->client_list, windows);
       break;
     case 'h':
     default:
@@ -168,6 +187,12 @@ void print_usage(void) {
     "  ************************************************************\n"
     "\n"
   );
-
 };
+
+void handle_error(char *err) {
+  perror(err);
+  // TODO print to log file...
+  exit(EXIT_FAILURE);
+}
+
 

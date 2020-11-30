@@ -9,7 +9,7 @@
 /* transmit_packet */
 
 
-void transmit_packet(int socket, message_t **message_queue, client_t *client) {
+void transmit_packet(int socket, message_t **message_queue, client_t *client, args_t *args, WINDOW **windows) {
   // TODO handle if client has gone offline since message entered queue
   // should maybe happen in the poll
   
@@ -32,7 +32,7 @@ void transmit_packet(int socket, message_t **message_queue, client_t *client) {
   *packet = *message->packet;
 
   // add to history and remove message from queue
-  insert_history(message->socket, message->packet, client);
+  insert_history(message->socket, message->packet, client, args, windows);
   remove_message(message, message_queue);
 }
 
@@ -40,7 +40,7 @@ void transmit_packet(int socket, message_t **message_queue, client_t *client) {
 /* receive_packet */
 
 // TODO don't really need socket here if passing pfds and index... OR pass pfds and client list separately...
-void receive_packet(int socket, int pfd_index, args_t *args) {
+void receive_packet(int socket, int pfd_index, args_t *args, WINDOW **windows) {
   // printf("recieve_packet\n");
   int recv_bytes = 0;
   int recv_flags = 0;
@@ -57,20 +57,20 @@ void receive_packet(int socket, int pfd_index, args_t *args) {
   }
 
   if (recv_bytes > 0) {
-    printf("%s\n", packet->body);
+    // printf("%s\n", packet->body); // TODO this is gonna be gone....
 
     // TODO is there a more efficient way of doing this...?
     client_t *client = *args->client_list;
     while (client->socket != socket) {
       client = client->next;
     }
-    insert_history(socket, packet, client);
+    insert_history(socket, packet, client, args, windows);
   } else {
     // catch disconnects missed by pollhup and errors
     if (recv_bytes < 0) {
       perror("recv");
     }
-    disconnect_client(args->pfds[pfd_index].fd, pfd_index, args);
+    disconnect_client(args->pfds[pfd_index].fd, pfd_index, args, windows);
   }
 }
 
@@ -78,7 +78,7 @@ void receive_packet(int socket, int pfd_index, args_t *args) {
 /* init_server */
 
 
-void init_server(int *server_socket, args_t *args) {
+void init_server(int *server_socket, args_t *args, WINDOW **windows) {
   // file descriptor for listening socket
   if ((*server_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     perror("socket");
@@ -104,28 +104,30 @@ void init_server(int *server_socket, args_t *args) {
     exit(EXIT_FAILURE);
   }
 
-  char address_buffer[INET_ADDRSTRLEN];
-  socklen_t addr_len = strlen(address_buffer);
-  inet_ntop(AF_INET, &server_address.sin_addr.s_addr, address_buffer, INET_ADDRSTRLEN);
-  printf("Host server started on %s port %u\n", 
-    address_buffer, ntohs(server_address.sin_port));
-
-  args->server_addr = server_address;
-
   // specify willingness for server_socket to accept incoming connections 
   if (listen(*server_socket, BACKLOG) == -1) {
     perror("listen");
     exit(EXIT_FAILURE);
   };
 
-  printf("Waiting for client connection...\n");
+  args->server_addr = server_address;
+  char address_buffer[INET_ADDRSTRLEN];
+  socklen_t addr_len = strlen(address_buffer);
+  inet_ntop(AF_INET, &server_address.sin_addr.s_addr, address_buffer, INET_ADDRSTRLEN);
+
+  werase(windows[INFO]);
+  mvwprintw(windows[INFO], 1, 1, "Host server started on %s port %u\n", 
+    address_buffer, ntohs(server_address.sin_port));
+  mvwprintw(windows[INFO], 2, 1, "Waiting for client connection...\n");
+  box(windows[INFO], 0, 0);
+  wrefresh(windows[INFO]);
 }
 
 
 /* accept_connection - accept incoming client connections */
 
 
-void accept_connection(int server_socket, args_t *args) {
+void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   // store client address info returned by accept
   struct sockaddr_in client_addr; // TODO should this be memset
   socklen_t addr_len = sizeof(client_addr);
@@ -140,19 +142,27 @@ void accept_connection(int server_socket, args_t *args) {
 
   set_nonblock(client_socket);
 
+//TODO do I need this string, on client_T????DODODO
   // destination string for inet_ntop TODO  use INET6 for when using getaddrinfo
   char address_string[INET6_ADDRSTRLEN];
   inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, address_string, INET6_ADDRSTRLEN);
-  printf("New client connected from %s.\n", address_string);
+
+  werase(windows[INFO]);
+  mvwprintw(windows[INFO], 1, 1, "New client connected from %s.\n", address_string);
+  box(windows[INFO], 0, 0);
+  wrefresh(windows[INFO]);
+
+  char username[8];
+  snprintf(username, 8, "user%i", server_socket);
 
   // add to client list and pfds
-  client_t *client = create_client(client_socket, address_string, client_addr);
-  append_client(client, args->client_list);
+  client_t *client = create_client(client_socket, username, client_addr);
+  append_client(client, args->client_list, windows);
   insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if first client, set to active user
   if (args->active_socket == -1) {
-    select_active_client(address_string, args);
+    select_active_client(username, args, windows);
   }
 }
 

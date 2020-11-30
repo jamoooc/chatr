@@ -4,14 +4,17 @@
 #include <stdio.h>
 
 
-struct pollfd *init_pfds(nfds_t nfds) {
+/* create_pfds_array */
+
+
+struct pollfd *create_pfds_array(nfds_t nfds) {
  struct pollfd *pfds = malloc(sizeof(*pfds) * nfds);
   if (pfds == NULL) {
     perror("pfds");
     exit(EXIT_FAILURE);
   }
 
-  // init pfd values
+  // init values
   for (int i = 0; i < nfds; i++) {
     pfds[i].fd = -1;
     pfds[i].events = 0;

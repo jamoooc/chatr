@@ -4,6 +4,7 @@
 #include "client.h"
 #include "connect.h"
 #include "pfds.h"
+#include "ui.h"
 
 
 /* main */
@@ -21,15 +22,14 @@ int main(int argc, char *argv[]) {
   }
 
   // step through argv 
-  while ((opt = getopt(argc, argv, OPTSTR)) != EOF ) {
+  while ((opt = getopt(argc, argv, OPTSTR)) != EOF) {
     switch (opt) {
       case 'p':
         options.port = atoi(optarg);
-        if ((valid_port(options.port)) == false ) {
+        if ((valid_port(options.port)) == false) {
           usage(basename(argv[0]), opt);
           exit(EXIT_FAILURE);
         };
-        printf("port is %d\n", options.port);
         break;
       case 'v':
         printf("%s version %s\n", basename(argv[0]), VERSION);
@@ -45,20 +45,25 @@ int main(int argc, char *argv[]) {
   // non-option arguments are moved to end of argv
   if (optind < argc) {
     while (optind < argc) {
-      printf("%s\n", argv[optind++]);
+      // printf("%s\n", argv[optind++]);
     }
   }
 
-  // linked lists and poll
-  int client_socket;               // reused by accept_connection for pfds
+  // linked lists
+  int client_socket; // reused by accept_connection for pfds
   int server_socket;
   client_t *client_list = NULL;
   message_t *message_queue = NULL;
-  nfds_t nfds = 3;                 // initial sizeof pfds array
-  nfds_t fd_count = 0;
-  struct pollfd *pfds = init_pfds(nfds);
 
-  // args object
+  // poll
+  nfds_t nfds = N_PFDS;
+  nfds_t fd_count = 0;
+  struct pollfd *pfds = create_pfds_array(nfds); 
+  WINDOW **windows = create_windows_array(N_WINDOWS);
+  init_curses(windows);
+
+
+  // args object // TODO put this in a func?
   args_t *args = malloc(sizeof(args_t));
   args->quit = 1;
   args->port = options.port;
@@ -72,18 +77,20 @@ int main(int argc, char *argv[]) {
   args->fd_count = &fd_count;
   args->nfds = &nfds;
 
-  // usage
-  print_usage();
-  
   // start listening server
-  init_server(&server_socket, args);
+  init_server(&server_socket, args, windows);
   set_nonblock(server_socket);
 
   // add stdin and server socket to pfds
   insert_pfd(&args->pfds, STDIN_FILENO, &fd_count, &nfds);
   insert_pfd(&args->pfds, server_socket, &fd_count, &nfds);
-  
+
+  // this needs its own func
   while (args->quit) {
+    // move cursor to input window   // TODO utility functions for this stuff...?
+    wmove(windows[3], 1, 1);
+    wrefresh(windows[3]);
+
     // poll file descriptors for sockets ready to read
     int poll_count = poll(args->pfds, fd_count, 0);
     if (poll_count == -1) {
@@ -92,14 +99,14 @@ int main(int argc, char *argv[]) {
     }
 
     // stdin
-    if (args->pfds[0].revents & POLLIN) { 
-      process_input(args);
+    if (args->pfds[0].revents & POLLIN) {
+      process_input(args, windows);
     }
 
     // server socket for client connection
     if (args->pfds[1].revents & POLLIN) {
-      accept_connection(args->pfds[1].fd, args);
-      print_clients(&client_list);
+      accept_connection(args->pfds[1].fd, args, windows);
+      print_clients(args->client_list, windows);
     }
 
     // client fds
@@ -118,14 +125,14 @@ int main(int argc, char *argv[]) {
 
       // check for client hangup 
       if (args->pfds[i].revents & POLLHUP) {
-        disconnect_client(args->pfds[i].fd, i, args);
+        disconnect_client(args->pfds[i].fd, i, args, windows);
         i++;
         continue;
       }
 
       // socket ready to recieve
       if (args->pfds[i].revents & POLLIN) {
-        receive_packet(args->pfds[i].fd, i, args); // TODO stupid args
+        receive_packet(args->pfds[i].fd, i, args, windows); // TODO stupid args
       }
 
       // if message in queue & socket ready, send any msg for that socket
@@ -134,7 +141,7 @@ int main(int argc, char *argv[]) {
         while (message != NULL) {
           if (args->pfds[i].revents & POLLOUT) {
             if (message->socket == args->pfds[i].fd) { 
-              transmit_packet(args->pfds[i].fd, args->message_queue, message->client);
+              transmit_packet(args->pfds[i].fd, args->message_queue, message->client, args, windows);
             }
           }
           message = message->next;
