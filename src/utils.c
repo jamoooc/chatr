@@ -31,13 +31,13 @@ int process_input(args_t *args, WINDOW **windows) {
   // check for user change, username, or create new message SWITCH?
   switch (input_buffer[0]) {
     case '@':
-      select_active_client(input_buffer, args, windows);
+      set_active_client(input_buffer, args, windows);
       break;
     case '$':
       set_host_username(input_buffer, args, windows);
       break;
     case '#':
-      set_client_alias(input_buffer, args, windows); // TODO change to set_client_username
+      set_client_username(input_buffer, args, windows);
       break;
     case '!':
       add_client(input_buffer, args, windows);
@@ -48,18 +48,11 @@ int process_input(args_t *args, WINDOW **windows) {
       // assist(input_buffer, args);
       break;
     default:
-      // if username not set, set to IP addr
-      if (strlen(args->username) < 1) { 
-        char address_buffer[INET6_ADDRSTRLEN];
-        inet_ntop(AF_INET, &args->server_addr.sin_addr.s_addr, address_buffer, INET6_ADDRSTRLEN);
-        strcpy(args->username, address_buffer);
-      }
-
       // create message for queue
-      if (args->active_socket > MIN_CLIENT_SOCK) {
+      if (args->active_client != NULL) {
         // create message
         // TODO review this - now passing active client to create msg, seems ok
-        message_t *message = create_message(args->active_socket, input_buffer, args->active_client);
+        message_t *message = create_message(input_buffer, args->active_client);
         append_message(message, args->message_queue);
       } else {
         werase(windows[INFO]);
@@ -95,8 +88,10 @@ int set_host_username(char *input, args_t *args, WINDOW **windows) {
   }
   
   // set username
-  strcpy(args->username, input);
-  wprintw(windows[INFO], "Host username set to: %s.\n", args->username);
+  strcpy(args->host_username, input);
+  werase(windows[INFO]);
+  mvwprintw(windows[INFO], 1, 1, "Host username set to: '%s'.\n", args->host_username);
+  box(windows[INFO], 0, 0);
   wrefresh(windows[INFO]);
   return 0;
 }

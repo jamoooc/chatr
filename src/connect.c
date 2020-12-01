@@ -12,16 +12,16 @@
 void transmit_packet(int socket, message_t **message_queue, client_t *client, args_t *args, WINDOW **windows) {
   // TODO handle if client has gone offline since message entered queue
   // should maybe happen in the poll
-  
+
   // check socket is valid and send packet
   message_t *message = *message_queue;
   int send_bytes;
-  if (message->socket > 2) {
-    if ((send_bytes = send(message->socket, message->packet, sizeof(packet_t), 0)) == -1) {
+  // if (message->client->socket > MIN_CLIENT_SOCK) {
+    if ((send_bytes = send(message->client->socket, message->packet, sizeof(packet_t), 0)) == -1) {
       perror("send");
       exit(EXIT_FAILURE);
     }
-  }
+  // }
 
   // store packet before message free'd
   packet_t *packet = malloc(sizeof(packet_t));
@@ -32,7 +32,8 @@ void transmit_packet(int socket, message_t **message_queue, client_t *client, ar
   *packet = *message->packet;
 
   // add to history and remove message from queue
-  insert_history(message->socket, message->packet, client, args, windows);
+  // TODO pass whole message?
+  insert_history(message->packet, client, args, windows);
   remove_message(message, message_queue);
 }
 
@@ -64,7 +65,7 @@ void receive_packet(int socket, int pfd_index, args_t *args, WINDOW **windows) {
     while (client->socket != socket) {
       client = client->next;
     }
-    insert_history(socket, packet, client, args, windows);
+    insert_history(packet, client, args, windows);
   } else {
     // catch disconnects missed by pollhup and errors
     if (recv_bytes < 0) {
@@ -153,7 +154,7 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   wrefresh(windows[INFO]);
 
   char username[8];
-  snprintf(username, 8, "user%i", server_socket);
+  snprintf(username, 8, "user%i", client_socket);
 
   // add to client list and pfds
   client_t *client = create_client(client_socket, username, client_addr);
@@ -161,9 +162,10 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if first client, set to active user
-  if (args->active_socket == -1) {
-    select_active_client(username, args, windows);
+  if (args->active_client == NULL) {
+    set_active_client(username, args, windows);
   }
+
 }
 
 

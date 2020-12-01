@@ -121,37 +121,41 @@ int add_client(char *input, args_t *args, WINDOW **windows) {
   char address_string[INET6_ADDRSTRLEN];
   inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, address_string, INET6_ADDRSTRLEN);
   
+  char username[8];
+  snprintf(username, 8, "user%i", client_socket);
+
   werase(windows[INFO]);
   mvwprintw(windows[INFO], 1, 1, "Connected to client on %s.\n", address_string);
   box(windows[INFO], 0, 0);
   wrefresh(windows[INFO]);
 
   // add to client list and pfds
-  client_t *client = create_client(client_socket, address_string, client_addr);
+  client_t *client = create_client(client_socket, username, client_addr);
   append_client(client, args->client_list, windows);
   insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
 
 
   // if no client, set to active client
   if (!args->active_client) {
-    select_active_client(address_string, args, windows);
+    set_active_client(username, args, windows);
   }
   return 0;
 }
 
 
-/* select_active_client */
+/* set_active_client */
 
 
-int select_active_client(char *input_user, args_t *args, WINDOW **windows) {
+int set_active_client(char *username, args_t *args, WINDOW **windows) {
   // remove '@' and '\n' before set username;
-  remove_first_char(input_user);
-  remove_newline(input_user);
+  remove_first_char(username);
+  remove_newline(username);
 
-  // validate input username TODO check min max lens etc. too
-  int input_length = strlen(input_user);
+  // validate input username
+  // TODO check min max lens etc. make func ?
+  int input_length = strlen(username);
   for (int i = 0; i < input_length; i++) {
-    if (isalnum(input_user[i] == 0)) {
+    if (isalnum(username[i] == 0)) {
       werase(windows[INFO]);
       mvwprintw(windows[INFO], 1, 1, INVALID_USERNAME);
       box(windows[INFO], 0, 0);
@@ -160,65 +164,42 @@ int select_active_client(char *input_user, args_t *args, WINDOW **windows) {
     }
   }
 
-  // hardcode start co-ordinates????
-  // TODO - WONT BE SETTING ALL THIS, just have active_client ptr
-  // can probably change the ifs
   // find client in ll
   client_t *client = *args->client_list; 
   while (client != NULL) {
-    // if username match
-    if (strcmp(input_user, client->username) == 0) {
-      // set active user and socket
-      // TODO these 2 ifs are just repeats, make a func
-      strcpy(args->active_username, input_user);
-      strcpy(args->active_alias, client->alias);
-      args->active_socket = client->socket;
+    if (strcmp(username, client->username) == 0) {
       args->active_client = client;
       werase(windows[INFO]);
-      mvwprintw(windows[INFO], 1, 1, "%s: %s.\n", ACTIVE_CLIENT_SET, input_user);
+      mvwprintw(windows[INFO], 1, 1, "%s: %s.\n", ACTIVE_CLIENT_SET, username);
       box(windows[INFO], 0, 0);
       wrefresh(windows[INFO]);
-      break;
+      print_history(args->active_client->history, windows);
+      return 0;
     } 
-    // if alias match
-    if (strcmp(input_user, client->alias) == 0) {
-      // set active user and socket
-      strcpy(args->active_username, client->username);
-      strcpy(args->active_alias, input_user);
-      args->active_socket = client->socket;
-      werase(windows[INFO]);
-      args->active_client = client;
-      mvwprintw(windows[INFO], 1, 1, "%s: %s.\n", ACTIVE_CLIENT_SET, input_user);
-      box(windows[INFO], 0, 0);
-      wrefresh(windows[INFO]);
-      break;
-    }
     client = client->next;
   }
 
   // if username or alias not found
   if (client == NULL) {
     werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "%s. %s: %s.\n", UNKNOWN_CLIENT, ACTIVE_CLIENT_SET,
-      strlen(args->active_alias) > 0 ? args->active_alias : args->active_username);
+    mvwprintw(windows[INFO], 1, 1, "%s. %s: %s.\n", UNKNOWN_CLIENT, ACTIVE_CLIENT_SET, args->active_client);
     box(windows[INFO], 0, 0);
     wrefresh(windows[INFO]);
     return 1;
   }
-
-  print_history(client->history, windows);
+  print_history(args->active_client->history, windows);
   return 0;
 }
 
 
-/* set_client_alias */
+/* set_client_username */
 
-// TODO set_client_username
-int set_client_alias(char *input, args_t *args, WINDOW **windows) {
-  // active user must be set to create alias
-  if (strlen(args->active_username) < 1) {
+
+int set_client_username(char *input, args_t *args, WINDOW **windows) {
+  // active user must be set to edit username
+  if (args->active_client == NULL) {
     werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "Select a client with '@ip' before creating an alias.\n");
+    mvwprintw(windows[INFO], 1, 1, "Select a client with '@username' before editing a username.\n");
     box(windows[INFO], 0, 0);
     wrefresh(windows[INFO]);
     return 1;
@@ -233,38 +214,49 @@ int set_client_alias(char *input, args_t *args, WINDOW **windows) {
   for (int i = 0; i < length; i++) {
     if (isalnum(input[i] == 0)) {
       werase(windows[INFO]);
-      mvwprintw(windows[INFO], 1, 1, "Username can only contain alphanumeric characters.\n");
+      mvwprintw(windows[INFO], 1, 1, "Usernames can only contain alphanumeric characters.\n");
       box(windows[INFO], 0, 0);
       wrefresh(windows[INFO]);
       return 1;
     }
   }
 
-  // set active_client and client->alias
-  client_t *client = *args->client_list;
-  while (client != NULL) {
-    if (strcmp(client->username, args->active_username) == 0) {
-      strcpy(client->alias, input);
-      strcpy(args->active_alias, input);
-      werase(windows[INFO]);
-      mvwprintw(windows[INFO], 1, 1, "Client %s alias set to '%s'.\n", client->username, client->alias);
-      box(windows[INFO], 0, 0);
-      wrefresh(windows[INFO]);
-      print_clients(args->client_list, windows);
-      return 0;
-    }
-    client = client->next;
-  }
+  // set client username to input
+  char prev_uname[USERNAME_LEN];
+  strcpy(prev_uname, args->active_client->username);
+  strcpy(args->active_client->username, input);
 
+  werase(windows[INFO]);
+  mvwprintw(windows[INFO], 1, 1, "Client '%s' username set to '%s'.\n", prev_uname, args->active_client->username);
+  box(windows[INFO], 0, 0);
+  wrefresh(windows[INFO]);
+  print_clients(args->client_list, windows);
+
+  // DO I ACTUALLY NEED TO SCAN USERS? just set active users username?or is below better to catch errs? mayb
+  // set active_client username to input
+  // client_t *client = *args->client_list;
+  // while (client != NULL) {
+  //   if (strcmp(client->username, args->active_client->username) == 0) {
+  //     werase(windows[INFO]);
+  //     mvwprintw(windows[INFO], 1, 1, "Client '%s' username set to '%s'.\n", client->username, input);
+  //     strcpy(client->username, input);
+  //     box(windows[INFO], 0, 0);
+  //     wrefresh(windows[INFO]);
+  //     print_clients(args->client_list, windows);
+  //     return 0;
+  //   }
+  //   client = client->next;
+  // }
   // no client found
-  if (client == NULL) {
-    werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "Username not found.");
-    box(windows[INFO], 0, 0);
-    wrefresh(windows[INFO]);
-    return 1;
-  }
-  return 1;
+  // if (client == NULL) {
+  //   werase(windows[INFO]);
+  //   mvwprintw(windows[INFO], 1, 1, "Username not found.");
+  //   box(windows[INFO], 0, 0);
+  //   wrefresh(windows[INFO]);
+  //   return 1;
+  // }
+
+  return 0;
 }
 
 
@@ -277,14 +269,22 @@ void disconnect_client(int socket, int pfd_index, args_t *args, WINDOW **windows
   while (client->socket != socket) {
     client = client->next;
   }
+
   werase(windows[INFO]);
   mvwprintw(windows[INFO], 1, 1, "Client username: %s, socket %i disconnected.\n", client->username, client->socket);
   box(windows[INFO], 0, 0);
-  wrefresh(windows[INFO]);
 
-  // reset active user
-  args->active_socket = -1; // TODO if remaining pfds, set to next available?
-  memset(args->active_username, 0, USERNAME_LEN);
+  // if active user, reset active user
+  if (client == args->active_client) {
+    mvwprintw(windows[INFO], 2, 1, "No active client.\n");
+    box(windows[INFO], 0, 0);
+    args->active_client = NULL;
+  }
+
+  wrefresh(windows[INFO]);
+  werase(windows[HISTORY]);
+  box(windows[HISTORY], 0, 0);
+  wrefresh(windows[HISTORY]);
 
   // remove from client / pfd list and close socket
   close(args->pfds[pfd_index].fd);
@@ -316,13 +316,12 @@ void remove_client(int socket, client_t **client_list) {
 
 
 void print_clients(client_t **client_list, WINDOW **windows) {
-  // printf("\nAvailable client_lists:\n");
   client_t *client = *client_list;
   int y = 1, x = 1;
 
   werase(windows[CLIENTS]);
   while (client != NULL) {
-    mvwprintw(windows[CLIENTS], y, x, "%s", strlen(client->alias) > 0 ? client->alias : client->username);
+    mvwprintw(windows[CLIENTS], y, x, "%s", client->username);
     client = client->next;
     y++;
   }

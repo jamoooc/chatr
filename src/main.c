@@ -73,9 +73,9 @@ int main(int argc, char *argv[]) {
 
   // TODO separate struct for pfds?
   args->pfds = pfds;
-  args->active_socket = -1;
   args->fd_count = &fd_count;
   args->nfds = &nfds;
+  args->active_client = NULL;
 
   // start listening server
   init_server(&server_socket, args, windows);
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
         message_t *message = *args->message_queue;
         while (message != NULL) {
           if (args->pfds[i].revents & POLLOUT) {
-            if (message->socket == args->pfds[i].fd) { 
+            if (message->client->socket == args->pfds[i].fd) { // put this check in transmit?
               transmit_packet(args->pfds[i].fd, args->message_queue, message->client, args, windows);
             }
           }

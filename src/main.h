@@ -50,7 +50,7 @@ extern char *optarg; // ptr to option argument
 extern int opterr, optind; // used by getopt()
 
 // not sure about these nams
-enum WINDOW_INDEX {
+enum WIN_INDEX {
   CLIENTS,
   INFO,
   HISTORY,
@@ -73,7 +73,7 @@ typedef struct packet {
   char body[BUFFER_LEN];
 } packet_t;
 
-// gross names
+/* history_t */
 typedef struct history {
   packet_t *packet;
   struct history *next;
@@ -82,8 +82,7 @@ typedef struct history {
 /* client_t - connected clients linked list */
 typedef struct client {
   int socket;
-  char username[USERNAME_LEN]; // host - set to IP if unset
-  char alias[USERNAME_LEN]; // pick one! same as username, sep field for ip
+  char username[USERNAME_LEN];
   char ip_addr[INET6_ADDRSTRLEN]; // maybs dont need sockaddr...
   history_t *history;
   struct sockaddr_in addr; // whats in her I want???
@@ -101,16 +100,12 @@ typedef struct message {
 /* arguments */
 typedef struct args {
   int                 quit;
-  // WINDOW              *clients_win; // temp ( windows structs)
-  unsigned int        port;
-  struct sockaddr_in  server_addr; // maybe!
+  unsigned int        port; // TODO is this useful, is in server_addr?
+  struct sockaddr_in  server_addr; // TODO is this useful?!
   int                 *server_socket;
-  int                 active_socket;
-  char                username[USERNAME_LEN]; // host
-  char                active_username[USERNAME_LEN];
-  client_t            *active_client; // TODO is better than all the searching!
-  char                active_alias[USERNAME_LEN];
-  struct pollfd       *pfds; // pfd struct needed
+  char                host_username[USERNAME_LEN];
+  client_t            *active_client;
+  struct pollfd       *pfds;
   nfds_t              *nfds;
   nfds_t              *fd_count;
   client_t            **client_list;

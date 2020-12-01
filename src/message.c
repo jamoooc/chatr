@@ -2,7 +2,7 @@
 #include "utils.h"
 
 // TODO better name
-void insert_history(int socket, packet_t *packet, client_t *client, args_t *args, WINDOW **windows) {
+void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **windows) {
   // create new history item
   history_t *new_msg = malloc(sizeof(history_t));
   if (new_msg == NULL) { // make helper func for these
@@ -19,10 +19,18 @@ void insert_history(int socket, packet_t *packet, client_t *client, args_t *args
   new_msg->next = prev_head;
   client->history = new_msg;
 
+// TEMP
+  werase(windows[INFO]);
+  mvwprintw(windows[INFO], 1, 1, "1CLIENT USERNAME %s.\n", client->username);
+  mvwprintw(windows[INFO], 2, 1, "2CLIENT USERNAME %s.\n", args->active_client->username);
+  box(windows[INFO], 0, 0);
+  wrefresh(windows[INFO]);
+
+
   // append_history(new_msg, client->history);
-  // if (strcmp(client->username, args->active_username)) {
+  if (strcmp(client->username, args->active_client->username) == 0) {
     print_history(client->history, windows);
-  // }
+  }
 }
 
 
@@ -42,6 +50,7 @@ void insert_history(int socket, packet_t *packet, client_t *client, args_t *args
 
 // review this whole func, dbl ptrs history please
 void print_history(history_t *history, WINDOW **windows) {
+
   history_t *msg = history;
   werase(windows[HISTORY]);
 
@@ -56,7 +65,7 @@ void print_history(history_t *history, WINDOW **windows) {
   }
 
   msg = history; // reset ptr
-  while (msg != NULL && counter < 8) {
+  while (msg != NULL) {
     mvwprintw(windows[HISTORY], y - counter, x, "%s\n", msg->packet->body);
     msg = msg->next;
     y--;
@@ -74,7 +83,7 @@ void print_history(history_t *history, WINDOW **windows) {
 /* create_message */
 
 
-message_t *create_message(int socket, char *message_body, client_t *client) {
+message_t *create_message(char *message_body, client_t *client) {
   // create packet for message struct
   packet_t *packet = malloc(sizeof(packet_t));
   if (packet == NULL) {
@@ -93,8 +102,8 @@ message_t *create_message(int socket, char *message_body, client_t *client) {
   }
 
   message->client = client;
-  message->socket = socket;
   message->packet = packet;
+  message->next = NULL;
 
   return message;
 }
@@ -142,45 +151,3 @@ void print_messages(message_t **message_queue) {
     tmp = tmp->next;
   }
 }
-
-
-/* 
-  add to history 
-
-create array client history LL 
-  same size as pfds? when pfd is resized probably a good time to resize chat_history..
-  maybe make a resize util func
-insert_to_history
-  LL - insert at end with *prev ptr OR insert at head no need for extra ptr
-display history
-  depending on size of curses window will need to display last n * (LINES - othercrap)
-  THUS history can be simplified inserting at HEAD so theres no need for *prev ptr
-
-
-existing funcs needing altered
-
-transmit - insert_to_history after success
-recieve - insert_to_history for specific client
-    how to determine specific client? 
-      use client IP so easier to add persistence
-        either have HEAD struct with IP and username, then use packet_t
-        no packet_t does not have a *next
-        make history_t 
-recieve packet - username displayed will need to come from history now
-
-typedef struct history_head {
-  username[SIZE];
-  ip_address[INET6bla];
-  history_t **history;
-} hist_head_t;
-
-typedef struct history {
-  packet_t *packet;
-  hist_t *next;
-} hist_t;
-
-
-remove username from packet_t??
-
-*/
-
