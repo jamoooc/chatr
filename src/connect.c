@@ -9,19 +9,16 @@
 /* transmit_packet */
 
 
-void transmit_packet(int socket, message_t **message_queue, client_t *client, args_t *args, WINDOW **windows) {
-  // TODO handle if client has gone offline since message entered queue
-  // should maybe happen in the poll
-
-  // check socket is valid and send packet
-  message_t *message = *message_queue;
+void transmit_packet(message_t *message, args_t *args, WINDOW **windows) {
+  // check socket is valid and send packet // TODO is err check here worthwhile
   int send_bytes;
-  // if (message->client->socket > MIN_CLIENT_SOCK) {
+  if (message->client->socket > MIN_CLIENT_SOCK) {
     if ((send_bytes = send(message->client->socket, message->packet, sizeof(packet_t), 0)) == -1) {
       perror("send");
       exit(EXIT_FAILURE);
+      // TODO handle if client has gone offline since message entered queue?? will be -1. mayb no exit(), return?
     }
-  // }
+  }
 
   // store packet before message free'd
   packet_t *packet = malloc(sizeof(packet_t));
@@ -32,16 +29,16 @@ void transmit_packet(int socket, message_t **message_queue, client_t *client, ar
   *packet = *message->packet;
 
   // add to history and remove message from queue
-  // TODO pass whole message?
-  insert_history(message->packet, client, args, windows);
-  remove_message(message, message_queue);
+  // TODO is it better to pass the whole message and to input_history????
+  insert_history(message->packet, message->client, args, windows);
+  remove_message(message, args->message_queue, windows);
 }
 
 
 /* receive_packet */
 
 // TODO don't really need socket here if passing pfds and index... OR pass pfds and client list separately...
-void receive_packet(int socket, int pfd_index, args_t *args, WINDOW **windows) {
+void receive_packet(int pfd_index, args_t *args, WINDOW **windows) {
   // printf("recieve_packet\n");
   int recv_bytes = 0;
   int recv_flags = 0;
@@ -52,17 +49,15 @@ void receive_packet(int socket, int pfd_index, args_t *args, WINDOW **windows) {
     exit(EXIT_FAILURE);
   }
 
-  if ((recv_bytes = recv(socket, packet, sizeof(packet_t), recv_flags)) == -1) {
+  if ((recv_bytes = recv(args->pfds[pfd_index].fd, packet, sizeof(packet_t), recv_flags)) == -1) {
     perror("recv");
     // exit(EXIT_FAILURE); // TODO don't quit on error,do summin??? look into this
   }
 
   if (recv_bytes > 0) {
-    // printf("%s\n", packet->body); // TODO this is gonna be gone....
-
     // TODO is there a more efficient way of doing this...?
     client_t *client = *args->client_list;
-    while (client->socket != socket) {
+    while (client->socket != args->pfds[pfd_index].fd) {
       client = client->next;
     }
     insert_history(packet, client, args, windows);
@@ -143,7 +138,7 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
 
   set_nonblock(client_socket);
 
-//TODO do I need this string, on client_T????DODODO
+  //TODO do I need this string, on client_T????DODODO
   // destination string for inet_ntop TODO  use INET6 for when using getaddrinfo
   char address_string[INET6_ADDRSTRLEN];
   inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, address_string, INET6_ADDRSTRLEN);
@@ -189,4 +184,3 @@ void *get_in_addr(struct sockaddr *sa) {
   }
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
-

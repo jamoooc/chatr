@@ -136,7 +136,7 @@ int add_client(char *input, args_t *args, WINDOW **windows) {
 
 
   // if no client, set to active client
-  if (!args->active_client) {
+  if (args->active_client == NULL) {
     set_active_client(username, args, windows);
   }
   return 0;
@@ -179,7 +179,7 @@ int set_active_client(char *username, args_t *args, WINDOW **windows) {
     client = client->next;
   }
 
-  // if username or alias not found
+  // if username not found
   if (client == NULL) {
     werase(windows[INFO]);
     mvwprintw(windows[INFO], 1, 1, "%s. %s: %s.\n", UNKNOWN_CLIENT, ACTIVE_CLIENT_SET, args->active_client);
@@ -231,30 +231,6 @@ int set_client_username(char *input, args_t *args, WINDOW **windows) {
   box(windows[INFO], 0, 0);
   wrefresh(windows[INFO]);
   print_clients(args->client_list, windows);
-
-  // DO I ACTUALLY NEED TO SCAN USERS? just set active users username?or is below better to catch errs? mayb
-  // set active_client username to input
-  // client_t *client = *args->client_list;
-  // while (client != NULL) {
-  //   if (strcmp(client->username, args->active_client->username) == 0) {
-  //     werase(windows[INFO]);
-  //     mvwprintw(windows[INFO], 1, 1, "Client '%s' username set to '%s'.\n", client->username, input);
-  //     strcpy(client->username, input);
-  //     box(windows[INFO], 0, 0);
-  //     wrefresh(windows[INFO]);
-  //     print_clients(args->client_list, windows);
-  //     return 0;
-  //   }
-  //   client = client->next;
-  // }
-  // no client found
-  // if (client == NULL) {
-  //   werase(windows[INFO]);
-  //   mvwprintw(windows[INFO], 1, 1, "Username not found.");
-  //   box(windows[INFO], 0, 0);
-  //   wrefresh(windows[INFO]);
-  //   return 1;
-  // }
 
   return 0;
 }
@@ -315,15 +291,21 @@ void remove_client(int socket, client_t **client_list) {
 /* print client */
 
 
+// TODO indicate active cli
+// TODO indicate pending msg history??
 void print_clients(client_t **client_list, WINDOW **windows) {
   client_t *client = *client_list;
   int y = 1, x = 1;
 
   werase(windows[CLIENTS]);
   while (client != NULL) {
+    // something like this 
+    // if (client == args->active_client) {
+      // attron(something cool)
     mvwprintw(windows[CLIENTS], y, x, "%s", client->username);
     client = client->next;
     y++;
+    // }
   }
   box(windows[CLIENTS], 0, 0);
   wrefresh(windows[CLIENTS]);

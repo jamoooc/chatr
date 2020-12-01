@@ -59,9 +59,10 @@ int main(int argc, char *argv[]) {
   nfds_t nfds = N_PFDS;
   nfds_t fd_count = 0;
   struct pollfd *pfds = create_pfds_array(nfds); 
+  
+  // ncurses
   WINDOW **windows = create_windows_array(N_WINDOWS);
   init_curses(windows);
-
 
   // args object // TODO put this in a func?
   args_t *args = malloc(sizeof(args_t));
@@ -88,8 +89,8 @@ int main(int argc, char *argv[]) {
   // this needs its own func
   while (args->quit) {
     // move cursor to input window   // TODO utility functions for this stuff...?
-    wmove(windows[3], 1, 1);
-    wrefresh(windows[3]);
+    wmove(windows[INPUT], 0, 0);
+    wrefresh(windows[INPUT]);
 
     // poll file descriptors for sockets ready to read
     int poll_count = poll(args->pfds, fd_count, 0);
@@ -125,33 +126,32 @@ int main(int argc, char *argv[]) {
 
       // check for client hangup 
       if (args->pfds[i].revents & POLLHUP) {
-        disconnect_client(args->pfds[i].fd, i, args, windows);
+        disconnect_client(args->pfds[i].fd, i, args, windows); // TODO dont use duplicate args...
         i++;
         continue;
       }
 
       // socket ready to recieve
       if (args->pfds[i].revents & POLLIN) {
-        receive_packet(args->pfds[i].fd, i, args, windows); // TODO stupid args
+        receive_packet(i, args, windows); // TODO dont use duplicate args...
       }
 
       // if message in queue & socket ready, send any msg for that socket
-      if (*args->message_queue != NULL) {
-        message_t *message = *args->message_queue;
-        while (message != NULL) {
-          if (args->pfds[i].revents & POLLOUT) {
-            if (message->client->socket == args->pfds[i].fd) { // put this check in transmit?
-              transmit_packet(args->pfds[i].fd, args->message_queue, message->client, args, windows);
-            }
+      message_t *message = *args->message_queue;
+      while (message != NULL) {
+        if (args->pfds[i].revents & POLLOUT) {
+          if (message->client->socket == args->pfds[i].fd) { // put this check in transmit?
+            transmit_packet(message, args, windows);
           }
-          message = message->next;
         }
+        message = message->next;
       }
     }
   }
 
   // free clients and server
   // TODO free clients
+  endwin();
   close(server_socket);
   exit(EXIT_SUCCESS);
 }

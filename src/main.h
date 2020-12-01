@@ -49,12 +49,17 @@ extern int errno; // used by std C lib for error communication
 extern char *optarg; // ptr to option argument
 extern int opterr, optind; // used by getopt()
 
-// not sure about these nams
+
+/* windows */
+
+
 enum WIN_INDEX {
   CLIENTS,
   INFO,
   HISTORY,
+  USAGE,
   INPUT,
+  I_BORDER,
 };
 
 

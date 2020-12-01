@@ -1,7 +1,11 @@
 #include "message.h"
 #include "utils.h"
+#include "ui.h"
 
-// TODO better name
+
+/* insert_history */
+
+
 void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **windows) {
   // create new history item
   history_t *new_msg = malloc(sizeof(history_t));
@@ -19,54 +23,32 @@ void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **w
   new_msg->next = prev_head;
   client->history = new_msg;
 
-// TEMP
-  werase(windows[INFO]);
-  mvwprintw(windows[INFO], 1, 1, "1CLIENT USERNAME %s.\n", client->username);
-  mvwprintw(windows[INFO], 2, 1, "2CLIENT USERNAME %s.\n", args->active_client->username);
-  box(windows[INFO], 0, 0);
-  wrefresh(windows[INFO]);
-
-
-  // append_history(new_msg, client->history);
+  // refresh msg history if active client
   if (strcmp(client->username, args->active_client->username) == 0) {
     print_history(client->history, windows);
   }
 }
 
 
-/* append_history */
+/* print_history */
 
 
-// void append_history(history_t *new, history_t *history) {
-//   history_t *tmp = history;
-//   while (tmp != NULL) {
-//     tmp = tmp->next;
-//   }
-//   new->next = tmp;
-// }
-
-
-// print_history
-
-// review this whole func, dbl ptrs history please
 void print_history(history_t *history, WINDOW **windows) {
+  int y = HISTORY_OFFSET;
+  int x = 1;
+  int w_offset = HISTORY_OFFSET;
 
+  // get offset if total msg history > window height
   history_t *msg = history;
-  werase(windows[HISTORY]);
-
-  // TODO set y and counter to LINES * 0.8
-  int y = 7, x = 1;
-  int counter = 7;
-
-  // offset for printing msgs if total msgs < 7 
-  while (msg != NULL && counter >= 0) {
+  while (msg != NULL && w_offset >= 0) {
     msg = msg->next;
-    counter--;
+    w_offset--;
   }
 
+  werase(windows[HISTORY]);
   msg = history; // reset ptr
   while (msg != NULL) {
-    mvwprintw(windows[HISTORY], y - counter, x, "%s\n", msg->packet->body);
+    mvwprintw(windows[HISTORY], y - w_offset, x, "%s: %s\n", msg->packet->username, msg->packet->body);
     msg = msg->next;
     y--;
   }
@@ -93,6 +75,7 @@ message_t *create_message(char *message_body, client_t *client) {
 
   remove_newline(message_body);
   strcpy(packet->body, message_body);
+  strcpy(packet->username, client->username);
 
   // create message for queue
   message_t *message = malloc(sizeof(message_t));
@@ -124,30 +107,17 @@ void append_message(message_t *new_message, message_t **message_queue) {
 
 /* remove message from queue */
 
-// TODO check this actually works in a different prog
-void remove_message(message_t *message, message_t **message_queue) {
+
+void remove_message(message_t *message, message_t **message_queue, WINDOW **windows) {
+  // TODO not super happy with this strcmp 
   message_t *del, **p = message_queue;
-  while (*p && strcmp((**p).packet->body, message->packet->body)) {     // while ptr is not null, and next doesnt match target  
-    p = &(*p)->next;                                                    // set p to the address of the next el until the next el is target
+  while (*p != NULL && 
+    strcmp((**p).packet->body, message->packet->body)) {    // while ptr is not null, and next doesnt match target  
+    p = &(*p)->next;                                        // set p to the address of the next el until the next el is target
   }
-  if (p) {                                                              // if not null (will be null (->next) if target not found)
+  if (p) {                                                  // if not null (will be null (->next) if target not found)
     del = *p;
     *p = del->next;
     free(del);
-  }
-}
-
-
-/* print message */
-
-// TODO REMOVE
-void print_messages(message_t **message_queue) {
-  // printf("message_queue\n"); // DEL
-  message_t *tmp = *message_queue;
-  while (tmp != NULL) {
-    // printf("username: %s\n", tmp->packet->username);
-    printf("packet: %s\n", tmp->packet->body);
-    // printf("socket: %i\n", tmp->socket);
-    tmp = tmp->next;
   }
 }

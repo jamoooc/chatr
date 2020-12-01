@@ -12,8 +12,8 @@ int process_input(args_t *args, WINDOW **windows) {
   wgetnstr(windows[INPUT], input_buffer, BUFFER_LEN);
   
   werase(windows[INPUT]);
-  box(windows[INPUT], 0, 0);
-  wmove(windows[INPUT], 1, 1);
+  // box(windows[INPUT], 0, 0);
+  wmove(windows[INPUT], 0, 0);
   wrefresh(windows[INPUT]);
   
   // check for exit condition
@@ -142,47 +142,6 @@ void remove_newline(char *input) {
 // TODO
 // void remove_whitespace() { }
 
-
-/* assist - print help messages */
-
-// RENAME this 
-void assist(char *input, args_t *args, WINDOW **windows) {
-  switch (input[1]) {
-    case 'm':
-      print_messages(args->message_queue);
-      break;
-    case 'c': 
-      print_clients(args->client_list, windows);
-      break;
-    case 'h':
-    default:
-      print_usage();
-    break;
-  }
-}
-
-
-/* print_usage renmae command list or someting */
-
-// this will change when ncurses added/
-void print_usage(void) {
-  printf(
-    "\n"
-    "  ************************************************************\n"
-    "  *                                                          *\n"
-    "  *   '$username' - set host username.                       *\n"
-    "  *   '!IP PORT' - add new remote client.                    *\n"
-    "  *   '@ip' or '@alias' - select active client.              *\n"
-    "  *   '#alias' - set active client's alias.                  *\n"
-    "  *   'quit' - exit.                                         *\n"
-    "  *   '/c' - print connected clients.                        *\n"
-    "  *   '/m' - print message queue.                            *\n"
-    "  *   '/h' - print this message.                             *\n"
-    "  *                                                          *\n"
-    "  ************************************************************\n"
-    "\n"
-  );
-};
 
 void handle_error(char *err) {
   perror(err);

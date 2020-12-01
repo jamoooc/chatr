@@ -19,7 +19,6 @@ void remove_newline(char *input);
 // description
 void assist(char *input, args_t *args, WINDOW **windows); // maybe not in here
 // rename assist/delete
-void print_usage(void); 
 // description
 int set_host_username(char *input, args_t *args, WINDOW **windows);
 // description
