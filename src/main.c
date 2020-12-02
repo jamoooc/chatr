@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     // server socket for client connection
     if (args->pfds[1].revents & POLLIN) {
       accept_connection(args->pfds[1].fd, args, windows);
-      print_clients(args->client_list, windows);
+      print_clients(args->active_client, args->client_list, windows);
     }
 
     // client fds
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
 
       // socket ready to recieve
       if (args->pfds[i].revents & POLLIN) {
-        receive_packet(i, args, windows); // TODO dont use duplicate args...
+        receive_packet(i, args, windows);
       }
 
       // if message in queue & socket ready, send any msg for that socket

@@ -12,13 +12,12 @@ int process_input(args_t *args, WINDOW **windows) {
   wgetnstr(windows[INPUT], input_buffer, BUFFER_LEN);
   
   werase(windows[INPUT]);
-  // box(windows[INPUT], 0, 0);
   wmove(windows[INPUT], 0, 0);
   wrefresh(windows[INPUT]);
   
   // check for exit condition
   if (strcmp(input_buffer, "quit") == 0) {
-    wprintw(windows[INFO], EXIT_MESSAGE);
+    wprintw(windows[INFO], EXIT_MESSAGE);// TODO sleep(1)?
     wrefresh(windows[INFO]);
     args->quit = 0;
     return 0;
@@ -112,6 +111,7 @@ bool valid_port(unsigned int port) {
 
 
 bool valid_username(char *username) {
+  // TODO
   return true;
 }
 

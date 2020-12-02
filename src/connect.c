@@ -10,7 +10,7 @@
 
 
 void transmit_packet(message_t *message, args_t *args, WINDOW **windows) {
-  // check socket is valid and send packet // TODO is err check here worthwhile
+  // check socket is valid and send packet
   int send_bytes;
   if (message->client->socket > MIN_CLIENT_SOCK) {
     if ((send_bytes = send(message->client->socket, message->packet, sizeof(packet_t), 0)) == -1) {
@@ -29,7 +29,6 @@ void transmit_packet(message_t *message, args_t *args, WINDOW **windows) {
   *packet = *message->packet;
 
   // add to history and remove message from queue
-  // TODO is it better to pass the whole message and to input_history????
   insert_history(message->packet, message->client, args, windows);
   remove_message(message, args->message_queue, windows);
 }
@@ -37,9 +36,8 @@ void transmit_packet(message_t *message, args_t *args, WINDOW **windows) {
 
 /* receive_packet */
 
-// TODO don't really need socket here if passing pfds and index... OR pass pfds and client list separately...
+
 void receive_packet(int pfd_index, args_t *args, WINDOW **windows) {
-  // printf("recieve_packet\n");
   int recv_bytes = 0;
   int recv_flags = 0;
 
@@ -112,7 +110,7 @@ void init_server(int *server_socket, args_t *args, WINDOW **windows) {
   inet_ntop(AF_INET, &server_address.sin_addr.s_addr, address_buffer, INET_ADDRSTRLEN);
 
   werase(windows[INFO]);
-  mvwprintw(windows[INFO], 1, 1, "Host server started on %s port %u\n", 
+  mvwprintw(windows[INFO], 1, 1, "Host listening on %s port %u\n", 
     address_buffer, ntohs(server_address.sin_port));
   mvwprintw(windows[INFO], 2, 1, "Waiting for client connection...\n");
   box(windows[INFO], 0, 0);
@@ -153,7 +151,7 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
 
   // add to client list and pfds
   client_t *client = create_client(client_socket, username, client_addr);
-  append_client(client, args->client_list, windows);
+  append_client(client, args->client_list, args, windows);
   insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if first client, set to active user

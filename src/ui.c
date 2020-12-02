@@ -27,7 +27,8 @@ void welcome_screen(void) {
 
   mvwprintw(welcome_win, y, x, WELCOME_MSG);
   wrefresh(welcome_win);
-  sleep(1); // TODO cheap?, can I do this with ncurses?
+  sleep(1);
+  // TODO review this - not freeing win?
   werase(welcome_win); 
   wrefresh(welcome_win); // removes artefacts
   delwin(welcome_win);
@@ -111,12 +112,11 @@ void init_ui(WINDOW **windows) {
 
 /* print_usage renmae command list or someting */
 
-// this will change when ncurses added/
 void print_usage(WINDOW *win) {
-  mvwprintw(win, 1, 1, "'$user' hostname");
-  mvwprintw(win, 3, 1, "'#user' clientname");
-  mvwprintw(win, 2, 1, "'@user' cur client");
-  mvwprintw(win, 4, 1, "'!IP PORT' connect");
-  mvwprintw(win, 5, 1, "'quit' exit");
+  mvwprintw(win, 1, 2, "$set_host");
+  mvwprintw(win, 3, 2, "#set_client");
+  mvwprintw(win, 2, 2, "@select_cli");
+  mvwprintw(win, 4, 2, "!IP PORT");
+  mvwprintw(win, 5, 2, "/quit");
   wrefresh(win);
 };

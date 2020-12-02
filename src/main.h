@@ -87,6 +87,7 @@ typedef struct history {
 /* client_t - connected clients linked list */
 typedef struct client {
   int socket;
+  int unread_msg;
   char username[USERNAME_LEN];
   char ip_addr[INET6_ADDRSTRLEN]; // maybs dont need sockaddr...
   history_t *history;

@@ -1,6 +1,7 @@
 #include "message.h"
 #include "utils.h"
 #include "ui.h"
+#include "client.h"
 
 
 /* insert_history */
@@ -23,9 +24,12 @@ void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **w
   new_msg->next = prev_head;
   client->history = new_msg;
 
-  // refresh msg history if active client
+  // refresh msg history if active client or indicate waiting message
   if (strcmp(client->username, args->active_client->username) == 0) {
-    print_history(client->history, windows);
+    print_history(client, args, windows);
+  } else {
+    client->unread_msg = 1;
+    print_clients(args->active_client, args->client_list, windows);
   }
 }
 
@@ -33,20 +37,23 @@ void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **w
 /* print_history */
 
 
-void print_history(history_t *history, WINDOW **windows) {
+void print_history(client_t *client, args_t *args, WINDOW **windows) {
   int y = HISTORY_OFFSET;
   int x = 1;
   int w_offset = HISTORY_OFFSET;
 
+  client->unread_msg = 0;
+  print_clients(args->active_client, args->client_list, windows);
+
   // get offset if total msg history > window height
-  history_t *msg = history;
+  history_t *msg = client->history;
   while (msg != NULL && w_offset >= 0) {
     msg = msg->next;
     w_offset--;
   }
 
   werase(windows[HISTORY]);
-  msg = history; // reset ptr
+  msg = client->history; // reset ptr
   while (msg != NULL) {
     mvwprintw(windows[HISTORY], y - w_offset, x, "%s: %s\n", msg->packet->username, msg->packet->body);
     msg = msg->next;
