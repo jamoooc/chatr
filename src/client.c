@@ -34,14 +34,28 @@ client_t *create_client(int socket, char *username, struct sockaddr_in client_ad
 
 
 void append_client(client_t *new_client, client_t **client_list, args_t *args, WINDOW **windows) {
-  client_t **tmp = client_list;  // double ptr to first client node
+  client_t **tmp = client_list;
   while (*tmp != NULL) {
     tmp = &(*tmp)->next;
   }
-  new_client->next = *tmp;  // *tmp is currently NULL
+  new_client->next = *tmp;  // *tmp is NULL
   *tmp = new_client;  
 
+  // TEMP
+  // werase(windows[INFO]);
+  // mvwprintw(windows[INFO], 1, 1, "APPEND CLIENT CALLED\n");
+  // box(windows[INFO], 0, 0);
+  // wrefresh(windows[INFO]);
+  // sleep(1);
+
   print_clients(args->active_client, client_list, windows);
+
+  // TEMP
+  // werase(windows[INFO]);
+  // mvwprintw(windows[INFO], 1, 1, "APPEND CLIENT CALLED\n");
+  // box(windows[INFO], 0, 0);
+  // wrefresh(windows[INFO]);
+  // sleep(1);
 }
 
 
@@ -50,8 +64,6 @@ void append_client(client_t *new_client, client_t **client_list, args_t *args, W
 
 // TODO this func is amess
 int add_client(char *input, args_t *args, WINDOW **windows) {
-  // printf("add_client: %s", input);
-
   // remove '!' and '\n'
   remove_first_char(input);
   remove_newline(input);
@@ -79,14 +91,14 @@ int add_client(char *input, args_t *args, WINDOW **windows) {
   client_addr.sin_family = AF_INET;
   client_addr.sin_port = htons(atoi(port));
   rv = inet_pton(AF_INET, ip, &(client_addr.sin_addr.s_addr)); // TODO extra brakcet?
-  
-  // printf("RV %i\n", rv);
 
   // validate ip
   rv = inet_pton(AF_INET, ip, &client_addr.sin_addr.s_addr);
   // invalid address family
   if (rv == 0) {
-    printf(INVALID_IPV4_ADDR);
+    mvwprintw(windows[INFO], 1, 1, "%s.\n", INVALID_IPV4_ADDR);
+    box(windows[INFO], 0, 0);
+    wrefresh(windows[INFO]);
     return EXIT_FAILURE;
   }
   // system error
@@ -97,7 +109,8 @@ int add_client(char *input, args_t *args, WINDOW **windows) {
 
   // validate port
   if ((valid_port(atoi(port))) == false) {
-    wprintw(windows[INFO], "%s.\n", INVALID_PORT);
+    mvwprintw(windows[INFO], 1, 1, "%s.\n", INVALID_PORT);
+    box(windows[INFO], 0, 0);
     wrefresh(windows[INFO]);
     return EXIT_FAILURE;
   };
@@ -135,7 +148,6 @@ int add_client(char *input, args_t *args, WINDOW **windows) {
   append_client(client, args->client_list, args, windows);
   insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
 
-
   // if no client, set to active client
   if (args->active_client == NULL) {
     set_active_client(username, args, windows);
@@ -148,6 +160,13 @@ int add_client(char *input, args_t *args, WINDOW **windows) {
 
 
 int set_active_client(char *username, args_t *args, WINDOW **windows) {
+  // TEMP
+  // werase(windows[INFO]);
+  // mvwprintw(windows[INFO], 1, 1, "SET ACTIVE CLIENT CALLED\n");
+  // box(windows[INFO], 0, 0);
+  // wrefresh(windows[INFO]);
+  // sleep(1);
+  
   // remove '@' and '\n' before set username;
   remove_first_char(username);
   remove_newline(username);
@@ -174,9 +193,14 @@ int set_active_client(char *username, args_t *args, WINDOW **windows) {
       mvwprintw(windows[INFO], 1, 1, "%s: %s.\n", ACTIVE_CLIENT_SET, username);
       box(windows[INFO], 0, 0);
       wrefresh(windows[INFO]);
-      print_history(args->active_client, args, windows);
-      // print_clients(args->active_client, args->client_list, windows); 
-      // DEL done in print_hist
+    // TEMP
+    // werase(windows[INFO]);
+    // mvwprintw(windows[INFO], 1, 1, "SET ACTIVE CALLED PRINT_HISTORY\n");
+    // box(windows[INFO], 0, 0);
+    // wrefresh(windows[INFO]);
+    // sleep(1);
+      print_history(client, args, windows);
+    
       return 0;
     } 
     client = client->next;
@@ -190,8 +214,14 @@ int set_active_client(char *username, args_t *args, WINDOW **windows) {
     wrefresh(windows[INFO]);
     return 1;
   }
+
   print_history(args->active_client, args, windows);
-  // print_clients(args->active_client, args->client_list, windows);
+    // TEMP
+    // werase(windows[INFO]);
+    // mvwprintw(windows[INFO], 1, 1, "END OF SET ACTIVE CLIENT\n");
+    // box(windows[INFO], 0, 0);
+    // wrefresh(windows[INFO]);
+    // sleep(1);
   return 0;
 }
 
@@ -276,8 +306,7 @@ void disconnect_client(int socket, int pfd_index, args_t *args, WINDOW **windows
 /* free single client sockets linked list */
 
 
-// TODO not relinking?
-// TODO this is removing all clients if removing any but last client-unlinknig somewhere?
+// TODO this is removing all clients if removing any but last client it hink- unlinknig somewhere?
 void remove_client(int socket, client_t **client_list) {
   client_t *del, **p = client_list;
   while (*p && (**p).socket != socket) {    // while ptr is not null, and next doesnt match target  
@@ -295,6 +324,13 @@ void remove_client(int socket, client_t **client_list) {
 
 
 void print_clients(client_t *active_client, client_t **client_list, WINDOW **windows) {
+  // TEMP
+  // werase(windows[INFO]);
+  // mvwprintw(windows[INFO], 1, 1, "PRINT CLIENTS CALLED\n");
+  // box(windows[INFO], 0, 0);
+  // wrefresh(windows[INFO]);
+  // sleep(1);
+  
   client_t *client = *client_list;
   int y = 1, x = 1;
 
@@ -312,6 +348,13 @@ void print_clients(client_t *active_client, client_t **client_list, WINDOW **win
   }
   box(windows[CLIENTS], 0, 0);
   wrefresh(windows[CLIENTS]);
+
+  // TEMP
+  // werase(windows[INFO]);
+  // mvwprintw(windows[INFO], 1, 1, "PRINT CLIENTS DONE\n");
+  // box(windows[INFO], 0, 0);
+  // wrefresh(windows[INFO]);
+  // sleep(1);
 }
 
 

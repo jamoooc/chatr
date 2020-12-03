@@ -88,14 +88,12 @@ dim_t *init_dim(int h, int w, int y, int x) {
 
 void init_ui(WINDOW **windows) {
   dim_t *clients, *history, *info, *input, *usage, *input_border;
-  clients = init_dim(LINES - HEIGHT_LOW_WIN - 3, WIDTH_L_WIN, 0, 0);
-  info = init_dim(HEIGHT_UPP_WIN, WIDTH_R_WIN, 0, WIDTH_L_WIN);
-  history = init_dim(HEIGHT_MID_WIN, WIDTH_R_WIN, HEIGHT_UPP_WIN, WIDTH_L_WIN);
-  //FIX THESE shits
-  usage = init_dim(HEIGHT_LOW_WIN + 3, WIDTH_L_WIN, LINES - HEIGHT_LOW_WIN - 3, 0);
-  input = init_dim(HEIGHT_LOW_WIN - 2, WIDTH_R_WIN - 2, LINES - HEIGHT_LOW_WIN + 1, WIDTH_L_WIN +1);
-  input_border = init_dim(HEIGHT_LOW_WIN, WIDTH_R_WIN, LINES - HEIGHT_LOW_WIN, WIDTH_L_WIN);
-  // TODO hardcode these!
+  clients = init_dim(LINES - HEIGHT_USE, L_WIDTH, 0, 0);
+  usage = init_dim(HEIGHT_USE, L_WIDTH, LINES - HEIGHT_USE, 0);
+  info = init_dim(HEIGHT_UPP, R_WIDTH, 0, L_WIDTH);
+  history = init_dim(HEIGHT_MID, R_WIDTH, HEIGHT_UPP, L_WIDTH);
+  input = init_dim(HEIGHT_LOW - BORDER, R_WIDTH - BORDER, LINES - HEIGHT_LOW + 1, L_WIDTH + 1);
+  input_border = init_dim(HEIGHT_LOW, R_WIDTH, LINES - HEIGHT_LOW, L_WIDTH);
 
   // windows ordered from left to right, top to bottom
   windows[0] = create_window(clients, TRUE);
@@ -107,6 +105,7 @@ void init_ui(WINDOW **windows) {
 
   // enable function keys in input box
   keypad(windows[4], TRUE);
+  
 }
 
 

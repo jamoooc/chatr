@@ -32,7 +32,7 @@
 #define USERNAME_LEN 30
 #define BUFFER_LEN 256
 #define MIN_CLIENT_SOCK 2
-#define N_WINDOWS 4         // initial val, realloc'd as necessary
+#define N_WINDOWS 6         // initial val, realloc'd as necessary
 #define N_PFDS 3            // initial val, realloc'd as necessary
 
 

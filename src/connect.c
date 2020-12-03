@@ -10,14 +10,18 @@
 
 
 void transmit_packet(message_t *message, args_t *args, WINDOW **windows) {
+      // TEMP
+    // werase(windows[INFO]);
+    // mvwprintw(windows[INFO], 1, 1, "TRANSMIT PACKET CALLED\n");
+    // box(windows[INFO], 0, 0);
+    // wrefresh(windows[INFO]);
+    // sleep(1);
   // check socket is valid and send packet
   int send_bytes;
-  if (message->client->socket > MIN_CLIENT_SOCK) {
-    if ((send_bytes = send(message->client->socket, message->packet, sizeof(packet_t), 0)) == -1) {
-      perror("send");
-      exit(EXIT_FAILURE);
-      // TODO handle if client has gone offline since message entered queue?? will be -1. mayb no exit(), return?
-    }
+  if ((send_bytes = send(message->client->socket, message->packet, sizeof(packet_t), 0)) == -1) {
+    perror("send");
+    exit(EXIT_FAILURE);
+    // TODO handle if client has gone offline since message entered queue?? will be -1. mayb no exit(), return?
   }
 
   // store packet before message free'd
@@ -31,6 +35,13 @@ void transmit_packet(message_t *message, args_t *args, WINDOW **windows) {
   // add to history and remove message from queue
   insert_history(message->packet, message->client, args, windows);
   remove_message(message, args->message_queue, windows);
+    
+    // TEMP
+    // werase(windows[INFO]);
+    // mvwprintw(windows[INFO], 1, 1, "TRANSMIT PACKET DONE\n");
+    // box(windows[INFO], 0, 0);
+    // wrefresh(windows[INFO]);
+    // sleep(1);
 }
 
 
@@ -58,7 +69,19 @@ void receive_packet(int pfd_index, args_t *args, WINDOW **windows) {
     while (client->socket != args->pfds[pfd_index].fd) {
       client = client->next;
     }
+    // TEMP
+    // werase(windows[INFO]);
+    // mvwprintw(windows[INFO], 1, 1, "RECEIVE PACKET CALLED INSERT HIST\n");
+    // box(windows[INFO], 0, 0);
+    // wrefresh(windows[INFO]);
+    // sleep(1);
     insert_history(packet, client, args, windows);
+    // TEMP
+    // werase(windows[INFO]);
+    // mvwprintw(windows[INFO], 1, 1, "RECEIVE PACKET, INSERT HIST DONE\n");
+    // box(windows[INFO], 0, 0);
+    // wrefresh(windows[INFO]);
+    // sleep(1);
   } else {
     // catch disconnects missed by pollhup and errors
     if (recv_bytes < 0) {
@@ -131,7 +154,8 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   // accept incoming connection
   if ((client_socket = accept(server_socket, (struct sockaddr *) &client_addr, &addr_len)) == -1) {
     perror("accept");
-    exit(EXIT_FAILURE);
+    // HANDLE ERROR
+    // exit(EXIT_FAILURE);
   };
 
   set_nonblock(client_socket);
@@ -156,6 +180,12 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
 
   // if first client, set to active user
   if (args->active_client == NULL) {
+            // TEMP
+            // werase(windows[INFO]);
+            // mvwprintw(windows[INFO], 1, 1, "ACCEPT CLIENT CALLED SET_ACTIVE _CLIENT\n");
+            // box(windows[INFO], 0, 0);
+            // wrefresh(windows[INFO]);
+            // sleep(1);
     set_active_client(username, args, windows);
   }
 

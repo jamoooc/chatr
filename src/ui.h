@@ -4,12 +4,19 @@
 #include <ncurses.h>
 #include "main.h"
 
-#define WIDTH_L_WIN 0.30 * COLS
-#define WIDTH_R_WIN 0.70 * COLS
-#define HEIGHT_UPP_WIN 4
-#define HEIGHT_MID_WIN (LINES - (HEIGHT_UPP_WIN + HEIGHT_LOW_WIN))
-#define HEIGHT_LOW_WIN 4 // LINES not zero based, +1 needed to fill screen if start at 0
-#define HISTORY_OFFSET (HEIGHT_MID_WIN - 3)
+#define LEFT 0.30 * COLS
+#define RIGHT 0.70 * COLS
+#define MIN_L_WIDTH 15
+
+#define L_WIDTH (MIN_L_WIDTH > LEFT ? MIN_L_WIDTH : LEFT)
+#define R_WIDTH (L_WIDTH == MIN_L_WIDTH ? COLS - L_WIDTH : RIGHT)
+
+#define HEIGHT_UPP 4
+#define HEIGHT_MID (LINES - (HEIGHT_UPP + HEIGHT_LOW))
+#define HEIGHT_LOW 4
+#define HISTORY_OFFSET (HEIGHT_MID - 3)
+#define HEIGHT_USE 7
+#define BORDER 2
 
 #define WELCOME_MSG "Welcome to chatr"
 

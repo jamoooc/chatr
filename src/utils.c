@@ -26,8 +26,8 @@ int process_input(args_t *args, WINDOW **windows) {
     // TODO exit gracefully
     // exit(EXIT_SUCCESS);
   }
-
-  // check for user change, username, or create new message SWITCH?
+// TODOD better comment here
+  // check for user change, username, or create new message
   switch (input_buffer[0]) {
     case '@':
       set_active_client(input_buffer, args, windows);
@@ -49,10 +49,16 @@ int process_input(args_t *args, WINDOW **windows) {
     default:
       // create message for queue
       if (args->active_client != NULL) {
+          // TEMP
+            // werase(windows[INFO]);
+            // mvwprintw(windows[INFO], 1, 1, "PROCESS INPUT CALLED CREATE MSG\n");
+            // box(windows[INFO], 0, 0);
+            // wrefresh(windows[INFO]);
+            // sleep(1);
         // create message
         // TODO review this - now passing active client to create msg, seems ok
-        message_t *message = create_message(input_buffer, args->active_client);
-        append_message(message, args->message_queue);
+        message_t *message = create_message(input_buffer, args->active_client, windows);
+        append_message(message, args->message_queue, windows);
       } else {
         werase(windows[INFO]);
         mvwprintw(windows[INFO], 1, 1, "No active client.\n");
