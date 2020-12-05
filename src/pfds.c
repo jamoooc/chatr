@@ -59,3 +59,12 @@ void remove_pfd(struct pollfd pfds[], int i, nfds_t *fd_count) {
   pfds[*fd_count - 1].revents = 0;
   (*fd_count)--;
 }
+
+
+/* free_pfds */
+
+void free_pfds(struct pollfd *pfds[], nfds_t *nfds) {
+  for (int i = 0; i < *nfds; i++) {
+    free(pfds[i]);
+  }
+}

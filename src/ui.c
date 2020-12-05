@@ -1,10 +1,9 @@
 #include "ui.h"
 #include "utils.h"
 
-// put these in header? // TODO REVIEW 
-// windows grid dimensions
 
-// TODO add err checks to ptrs
+/* init_curses */
+
 
 void init_curses(WINDOW **windows) {
   initscr();
@@ -22,16 +21,42 @@ void welcome_screen(void) {
   WINDOW *welcome_win = create_window(welcome_dim, TRUE);
 
   int y, x;
-  y = LINES / 2;
-  x = (COLS / 2) - (strlen(WELCOME_MSG) / 2);
+  y = (LINES / 2) - 4;
+  x = COLS / 2;
 
-  mvwprintw(welcome_win, y, x, WELCOME_MSG);
+  mvwprintw(welcome_win, y, x - (strlen(WELCOME_MSG) / 2), WELCOME_MSG);
+  mvwprintw(welcome_win, y + 2, x - (strlen(HOSTNAME_MSG) / 2), HOSTNAME_MSG);
+  mvwprintw(welcome_win, y + 3, x - (strlen(CLIENTNAME_MSG) / 2), CLIENTNAME_MSG);
+  mvwprintw(welcome_win, y + 4, x - (strlen(SELECT_CLIENT_MSG) / 2), SELECT_CLIENT_MSG);
+  mvwprintw(welcome_win, y + 5, x - (strlen(CONNET_MSG) / 2), CONNET_MSG);
+  mvwprintw(welcome_win, y + 6, x - (strlen(QUIT_MSG) / 2), QUIT_MSG);
+  mvwprintw(welcome_win, y + 8, x - (strlen(CONTINUE_MSG) / 2), CONTINUE_MSG);
+
   wrefresh(welcome_win);
-  sleep(1);
-  // TODO review this - not freeing win?
+  wgetch(welcome_win);
   werase(welcome_win); 
   wrefresh(welcome_win); // removes artefacts
   delwin(welcome_win);
+}
+
+
+/* create_windows_array */
+
+
+void exit_screen(void) {
+  dim_t *exit_dim = init_dim(0, 0, 0, 0);
+  WINDOW *exit_win = create_window(exit_dim, TRUE);
+
+  int y, x;
+  y = (LINES / 2) / 2;
+  x = COLS / 2;
+
+  mvwprintw(exit_win, y, x - (strlen(SHUTDOWN_MSG) / 2), SHUTDOWN_MSG);
+  wrefresh(exit_win);
+  sleep(1);
+  werase(exit_win); 
+  wrefresh(exit_win);
+  delwin(exit_win);
 }
 
 
@@ -103,19 +128,38 @@ void init_ui(WINDOW **windows) {
   windows[4] = create_window(input, FALSE);
   windows[5] = create_window(input_border, TRUE);
 
-  // enable function keys in input box
-  keypad(windows[4], TRUE);
-  
+  // check for NULL ptrs
+  for (int i = 0; i < N_WINDOWS; i++) {
+    if (windows[i] == NULL) {
+      perror("create window");
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  keypad(windows[4], TRUE); // enable function keys in input box
 }
 
 
 /* print_usage renmae command list or someting */
 
+
 void print_usage(WINDOW *win) {
-  mvwprintw(win, 1, 2, "$set_host");
-  mvwprintw(win, 3, 2, "#set_client");
-  mvwprintw(win, 2, 2, "@select_cli");
+  mvwprintw(win, 1, 2, "$hostname");
+  mvwprintw(win, 3, 2, "#clientname");
+  mvwprintw(win, 2, 2, "@select_client");
   mvwprintw(win, 4, 2, "!IP PORT");
   mvwprintw(win, 5, 2, "/quit");
   wrefresh(win);
 };
+
+
+/* free_windows_array */
+
+
+void free_windows(WINDOW **window) {
+  for (int i = 0; i < N_WINDOWS; i++) {
+    werase(window[i]); 
+    wrefresh(window[i]);
+    delwin(window[i]);
+  }
+}

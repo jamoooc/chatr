@@ -127,15 +127,15 @@ void init_server(int *server_socket, args_t *args, WINDOW **windows) {
     exit(EXIT_FAILURE);
   };
 
-  args->server_addr = server_address;
+  // args->server_addr = server_address;
   char address_buffer[INET_ADDRSTRLEN];
   socklen_t addr_len = strlen(address_buffer);
   inet_ntop(AF_INET, &server_address.sin_addr.s_addr, address_buffer, INET_ADDRSTRLEN);
+  strcpy(args->host_username, address_buffer);
 
   werase(windows[INFO]);
-  mvwprintw(windows[INFO], 1, 1, "Host listening on %s port %u\n", 
-    address_buffer, ntohs(server_address.sin_port));
-  mvwprintw(windows[INFO], 2, 1, "Waiting for client connection...\n");
+  mvwprintw(windows[INFO], 1, 1, "%s %s/%u", HOST_ON, address_buffer, ntohs(server_address.sin_port));
+  mvwprintw(windows[INFO], 2, 1, "%s", LISTENING);
   box(windows[INFO], 0, 0);
   wrefresh(windows[INFO]);
 }
@@ -146,7 +146,7 @@ void init_server(int *server_socket, args_t *args, WINDOW **windows) {
 
 void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   // store client address info returned by accept
-  struct sockaddr_in client_addr; // TODO should this be memset
+  struct sockaddr_in client_addr;
   socklen_t addr_len = sizeof(client_addr);
   memset(&client_addr, 0, addr_len);
   int client_socket;
@@ -154,13 +154,11 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   // accept incoming connection
   if ((client_socket = accept(server_socket, (struct sockaddr *) &client_addr, &addr_len)) == -1) {
     perror("accept");
-    // HANDLE ERROR
-    // exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
   };
 
   set_nonblock(client_socket);
 
-  //TODO do I need this string, on client_T????DODODO
   // destination string for inet_ntop TODO  use INET6 for when using getaddrinfo
   char address_string[INET6_ADDRSTRLEN];
   inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, address_string, INET6_ADDRSTRLEN);
@@ -170,6 +168,7 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   box(windows[INFO], 0, 0);
   wrefresh(windows[INFO]);
 
+  // set default username
   char username[8];
   snprintf(username, 8, "user%i", client_socket);
 
@@ -178,17 +177,16 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   append_client(client, args->client_list, args, windows);
   insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
 
-  // if first client, set to active user
+  // if only client, set to active user
   if (args->active_client == NULL) {
-            // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "ACCEPT CLIENT CALLED SET_ACTIVE _CLIENT\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
+    // TEMP
+    // werase(windows[INFO]);
+    // mvwprintw(windows[INFO], 1, 1, "ACCEPT CLIENT CALLED SET_ACTIVE _CLIENT\n");
+    // box(windows[INFO], 0, 0);
+    // wrefresh(windows[INFO]);
+    // sleep(1);
     set_active_client(username, args, windows);
   }
-
 }
 
 

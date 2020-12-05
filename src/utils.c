@@ -57,7 +57,7 @@ int process_input(args_t *args, WINDOW **windows) {
             // sleep(1);
         // create message
         // TODO review this - now passing active client to create msg, seems ok
-        message_t *message = create_message(input_buffer, args->active_client, windows);
+        message_t *message = create_message(input_buffer, args->active_client, args, windows);
         append_message(message, args->message_queue, windows);
       } else {
         werase(windows[INFO]);
@@ -143,15 +143,23 @@ void remove_newline(char *input) {
   }
 }
 
+// TODO - maybe use this instead of remove_newline as it removes newline too
+void remove_whitespace(char *input) {
+  int len = strlen(input);
+  for (int i = 0; i >= 0; i++) {
+    if (isspace(input[i])) {
+      input[i] = '\0';
+    }
+  }
+}
 
 
-// TODO
-// void remove_whitespace() { }
+// 
 
-
-void handle_error(char *err) {
-  perror(err);
-  // TODO print to log file...
+void handle_error(int e, const char *str) {
+  FILE *log_file = fopen("logfile.txt", "w");
+  fprintf(log_file, "%s: %s", str, strerror(e));
+  fclose(log_file);
   exit(EXIT_FAILURE);
 }
 

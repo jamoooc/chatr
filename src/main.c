@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
 
   // this needs its own func
   while (args->quit) {
-    // move cursor to input window   // TODO utility functions for this stuff...?
+    // move cursor to input window
     wmove(windows[INPUT], 0, 0);
     wrefresh(windows[INPUT]);
 
@@ -183,8 +183,6 @@ int main(int argc, char *argv[]) {
         // sleep(1);
       }
 
-
-// REORDER THIS NEXT? LOOP MSGS THEN CHECK FD
       // if message in queue & socket ready, send any msg for that socket
       if (args->pfds[i].revents & POLLOUT) {
         // TEMP
@@ -223,9 +221,15 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // free clients and server
-  // TODO free clients
-  endwin();
+
+
+  // free everything
+  free_clients(args->client_list);
+  free_messages(args->message_queue);
+  free_windows(windows);
+  // free_windows(args->windows);
+  exit_screen();
+  endwin(); // end curses
   close(server_socket);
   exit(EXIT_SUCCESS);
 }

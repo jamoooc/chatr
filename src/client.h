@@ -11,5 +11,7 @@ int set_client_username(char *input, args_t *args, WINDOW **windows);
 void disconnect_client(int socket, int pfd_index, args_t *args, WINDOW **windows);
 void remove_client(int socket, client_t **client_list);
 void print_clients(client_t *active_client, client_t **client, WINDOW **windows);
+void free_clients(client_t **client_list);
+void free_history(history_t *history);
 
 #endif /* CLIENT_H */

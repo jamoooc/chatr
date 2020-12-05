@@ -1,6 +1,8 @@
 #include "../unity/unity.h"
 #include "../src/utils.h"
 
+// gcc ../src/pfds.c test-something.c ../unity/unity.c -o test
+
 void setUp() {
   /* run before each test */
 }

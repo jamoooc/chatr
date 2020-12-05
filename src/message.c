@@ -128,7 +128,7 @@ void print_history(client_t *client, args_t *args, WINDOW **windows) {
 /* create_message */
 
 
-message_t *create_message(char *message_body, client_t *client, WINDOW **windows) {
+message_t *create_message(char *message_body, client_t *client, args_t *args, WINDOW **windows) {
     // TEMP
             // werase(windows[INFO]);
             // mvwprintw(windows[INFO], 1, 1, "CALL CREATE MSG\n");
@@ -144,7 +144,7 @@ message_t *create_message(char *message_body, client_t *client, WINDOW **windows
 
   remove_newline(message_body);
   strcpy(packet->body, message_body);
-  strcpy(packet->username, client->username);
+  strcpy(packet->username, args->host_username);
 
   // create message for queue
   message_t *message = malloc(sizeof(message_t));
@@ -211,18 +211,11 @@ void remove_message(message_t *message, message_t **message_queue, WINDOW **wind
             // sleep(1);
   // TODO not super happy with this strcmp 
   message_t *del, **p = message_queue;
-  while (*p != NULL && strcmp((**p).packet->body, message->packet->body) != 0) { 
-    // strcmp((**p).packet->body, message->packet->body) > 0) {    // while ptr is not null, and next doesnt match target  
+  while (*p != NULL && strcmp((**p).packet->body, message->packet->body) != 0) {
     p = &(*p)->next;                                        // set p to the address of the next el until the next el is target
   }
   if (p) {                                                  // if not null (will be null (->next) if target not found)
     del = *p;
-      // TEMP
-      // werase(windows[INFO]);
-      // mvwprintw(windows[INFO], 1, 1, "REMOVING MSG: %s\n", del->packet->body);
-      // box(windows[INFO], 0, 0);
-      // wrefresh(windows[INFO]);
-      // sleep(1);
     *p = del->next;
     free(del);
   }
@@ -232,4 +225,17 @@ void remove_message(message_t *message, message_t **message_queue, WINDOW **wind
     // box(windows[INFO], 0, 0);
     // wrefresh(windows[INFO]);
     // sleep(1);
+}
+
+
+/* free remaining messages in queue */
+
+
+void free_messages(message_t **message_queue) {
+  message_t *del, *message = *message_queue;
+  while (message != NULL) {
+    del = message;
+    message = del->next;
+    free(del);
+  }
 }

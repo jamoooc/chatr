@@ -20,7 +20,7 @@ client_t *create_client(int socket, char *username, struct sockaddr_in client_ad
   history_t *history_head = NULL;
 
   client->socket = socket;
-  client->addr = client_addr;
+  // client->addr = client_addr;
   client->next = NULL;
   client->unread_msg = 0;
   client->history = history_head;
@@ -94,6 +94,7 @@ int add_client(char *input, args_t *args, WINDOW **windows) {
 
   // validate ip
   rv = inet_pton(AF_INET, ip, &client_addr.sin_addr.s_addr);
+  
   // invalid address family
   if (rv == 0) {
     mvwprintw(windows[INFO], 1, 1, "%s.\n", INVALID_IPV4_ADDR);
@@ -358,3 +359,28 @@ void print_clients(client_t *active_client, client_t **client_list, WINDOW **win
 }
 
 
+/* free_client-list */
+
+
+void free_clients(client_t **client_list) {
+  client_t *del, *client = *client_list;
+  while(client != NULL) {
+    del = client;
+    client = del->next;
+    free_history(del->history);
+    free(del);
+  }
+}
+
+
+/* free client messages in queue */
+
+
+void free_history(history_t *history) {
+  history_t *del, *msg = history;
+  while (msg != NULL) {
+    del = msg;
+    msg = del->next;
+    free(del);
+  }
+}
