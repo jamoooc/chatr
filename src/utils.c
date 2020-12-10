@@ -2,6 +2,7 @@
 #include "message.h"
 #include "client.h"
 
+#include "ctype.h"
 
 /* process_input */
 
@@ -16,18 +17,11 @@ int process_input(args_t *args, WINDOW **windows) {
   wrefresh(windows[INPUT]);
   
   // check for exit condition
-  if (strcmp(input_buffer, "quit") == 0) {
-    wprintw(windows[INFO], EXIT_MESSAGE);// TODO sleep(1)?
-    wrefresh(windows[INFO]);
+  if (strcmp(input_buffer, "/quit") == 0) {
     args->quit = 0;
     return 0;
-    // TODO: FREE EVERYTHING
-    // TODO: PRINT LEAVING MESSAGE
-    // TODO exit gracefully
-    // exit(EXIT_SUCCESS);
   }
-// TODOD better comment here
-  // check for user change, username, or create new message
+
   switch (input_buffer[0]) {
     case '@':
       set_active_client(input_buffer, args, windows);
@@ -41,23 +35,11 @@ int process_input(args_t *args, WINDOW **windows) {
     case '!':
       add_client(input_buffer, args, windows);
       break;
-    case '/':
-      // TODO quit should be in here
-      // TODO add this back in a when u sort out your life
-      // assist(input_buffer, args);
-      break;
     default:
       // create message for queue
       if (args->active_client != NULL) {
-          // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "PROCESS INPUT CALLED CREATE MSG\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
         // create message
-        // TODO review this - now passing active client to create msg, seems ok
-        message_t *message = create_message(input_buffer, args->active_client, args, windows);
+        msg_t *message = create_message(input_buffer, args->active_client, args, windows);
         append_message(message, args->message_queue, windows);
       } else {
         werase(windows[INFO]);
@@ -84,8 +66,7 @@ int set_host_username(char *input, args_t *args, WINDOW **windows) {
   int length = strlen(input);
   for (int i = 0; i < length; i++) {
     if (isalnum(input[i] == 0)) {
-      // TODO maybe clearing screen here etc.. 
-      // need a func for reset screen
+      werase(windows[INFO]);
       wprintw(windows[INFO], "%s.\n", INVALID_USERNAME);
       wrefresh(windows[INFO]);
       return 1;
@@ -104,8 +85,41 @@ int set_host_username(char *input, args_t *args, WINDOW **windows) {
 
 /* check for valid_port */
 
-// not sure about this, by definition anything but an unsigned int wont work? 0-65535
-bool valid_port(unsigned int port) {
+
+int valid_port(char *input) {
+  // no trailing whitespace
+  int len = strlen(input);
+  if (isspace(input[len]) != 0) {
+    // remove_trailing_whitespace(input);
+    return false;
+  }
+
+  if (len < 1 || len > 5) {
+    return false;
+  }
+
+  int zeros = 0, spaces = 0;
+  for (int i = 0; i < len; i++) {
+    if (!isdigit(input[i]) && input[i] != ' ') {
+      return false;
+    }
+    if (input[i] == '0') {
+      zeros++;
+    }
+    if (input[i] == ' ') {
+      zeros++;
+    }
+  }
+  // don't accept only 0 or spaces
+  if (zeros == len && len > 1) {
+    return false;
+  }
+  if (spaces == len && len > 1) {
+    return false;
+  }
+
+  // strtol will strip leading whitespace and account for a positive '+' or negative '-'
+  long port = strtol(input, NULL, 10);
   if (port < 0 || port > 65535) {
     return false;
   }
@@ -117,14 +131,22 @@ bool valid_port(unsigned int port) {
 
 
 bool valid_username(char *username) {
-  // TODO
+  int len = strlen(username);
+  if (len < 1 || len > USERNAME_LEN) {
+    return false;
+  }
+  for (int i = 0; i < len; i++) {
+    if (!isalnum(username[i])) {
+      return false;
+    }
+  }
   return true;
 }
 
 
 /* remove_first_char if @#!$ */
 
-// TODO not a great name 
+
 void remove_first_char(char *input) {
   char c = input[0];
   if (c == '!' || c == '$' || c == '@' || c == '#') {
@@ -136,26 +158,36 @@ void remove_first_char(char *input) {
 /* remove_newline */
 
 
-void remove_newline(char *input) {
-  int i = strlen(input) - 1;
+int remove_newline(char *input) {
+  int len = strlen(input);
+  if (len <= 0) {
+    return 1;
+  }
+  int i = len - 1;
   if (input[i] == '\n') {
     input[i] = '\0';
   }
+  return 0;
 }
+
 
 // TODO - maybe use this instead of remove_newline as it removes newline too
-void remove_whitespace(char *input) {
-  int len = strlen(input);
-  for (int i = 0; i >= 0; i++) {
-    if (isspace(input[i])) {
-      input[i] = '\0';
+void remove_trailing_whitespace(char *input) {
+  int i = 0, last = 0;
+  while (input[i] != '\0') {
+    if ((isspace(input[i]) == 0)) {
+      last = i;
     }
+    i++;
   }
+  input[last + 1] = '\0';
 }
 
 
-// 
+/* handle_error */
 
+
+// will need to get return vales form funcs for error codes etc.
 void handle_error(int e, const char *str) {
   FILE *log_file = fopen("logfile.txt", "w");
   fprintf(log_file, "%s: %s", str, strerror(e));

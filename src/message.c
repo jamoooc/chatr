@@ -8,15 +8,9 @@
 
 
 void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **windows) {
-          // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "INSERT HISTORY CALLED\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
   // create new history item
   history_t *new_msg = malloc(sizeof(history_t));
-  if (new_msg == NULL) { // make helper func for these
+  if (new_msg == NULL) {
     perror("malloc insert_history");
     exit(EXIT_FAILURE);
   }
@@ -32,68 +26,29 @@ void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **w
 
   // refresh msg history if active client or indicate waiting message
   if (strcmp(client->username, args->active_client->username) == 0) {
-      // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "PRINT HISTORY IF CALLED\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
     print_history(client, args, windows);
-      // TEMP
-      // werase(windows[INFO]);
-      // mvwprintw(windows[INFO], 1, 1, "PRINT HISTORY DONE\n");
-      // box(windows[INFO], 0, 0);
-      // wrefresh(windows[INFO]);
-      // sleep(1);
   } else {
-      // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "PRINT CLIENTS CALLED\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
     client->unread_msg = 1;
     print_clients(args->active_client, args->client_list, windows);
-     // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "PRINT CLIENTS CALLED\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
   }
-    // TEMP
-    // werase(windows[INFO]);
-    // mvwprintw(windows[INFO], 1, 1, "INSERT HISTORY DONE\n");
-    // box(windows[INFO], 0, 0);
-    // wrefresh(windows[INFO]);
-    // sleep(1);
 }
-
 
 /* print_history */
 
 
-void print_history(client_t *client, args_t *args, WINDOW **windows) {
-          // TEMP
-    // werase(windows[INFO]);
-    // mvwprintw(windows[INFO], 1, 1, "PRINT HISTORY CALLED\n");
-    // box(windows[INFO], 0, 0);
-    // wrefresh(windows[INFO]);
-    // sleep(1);
+int print_history(client_t *client, args_t *args, WINDOW **windows) {
+  if (client->history == NULL) {
+    return 1;
+  }
 
-  // handle more gracefully if active client null??
+  // window offset used to print messages from bottom up
   int y = HISTORY_OFFSET;
   int x = 1;
   int w_offset = HISTORY_OFFSET;
 
   client->unread_msg = 0;
   print_clients(args->active_client, args->client_list, windows);
-        // TEMP
-    // werase(windows[INFO]);
-    // mvwprintw(windows[INFO], 1, 1, "RECEIVE PACKET CALLED PRINT CLIENTS\n");
-    // box(windows[INFO], 0, 0);
-    // wrefresh(windows[INFO]);
-    // sleep(1);
+
   // get offset if total msg history > window height
   history_t *msg = client->history;
   while (msg != NULL && w_offset >= 0) {
@@ -111,30 +66,14 @@ void print_history(client_t *client, args_t *args, WINDOW **windows) {
 
   box(windows[HISTORY], 0, 0);
   wrefresh(windows[HISTORY]);
-  // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "PRINT HISTORY DONE\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
-
+  return 0;
 }
-
-
-// TODO 
-// void free_message_history(void) { }
 
 
 /* create_message */
 
 
-message_t *create_message(char *message_body, client_t *client, args_t *args, WINDOW **windows) {
-    // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "CALL CREATE MSG\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
+msg_t *create_message(char *message_body, client_t *client, args_t *args, WINDOW **windows) {
   // create packet for message struct
   packet_t *packet = malloc(sizeof(packet_t));
   if (packet == NULL) {
@@ -147,9 +86,9 @@ message_t *create_message(char *message_body, client_t *client, args_t *args, WI
   strcpy(packet->username, args->host_username);
 
   // create message for queue
-  message_t *message = malloc(sizeof(message_t));
+  msg_t *message = malloc(sizeof(msg_t));
   if (message == NULL) {
-    perror("malloc message_t");
+    perror("malloc msg_t");
     exit(EXIT_FAILURE);
   }
 
@@ -157,18 +96,6 @@ message_t *create_message(char *message_body, client_t *client, args_t *args, WI
   message->packet = packet;
   message->next = NULL;
 
-  //   // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "CREATE MSG PACKET: %s\n", message->packet->body);
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-  //           sleep(1);
-  // // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "CREATE MSG DONE\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
   return message;
 }
 
@@ -176,66 +103,48 @@ message_t *create_message(char *message_body, client_t *client, args_t *args, WI
 /* append_message */
 
 
-void append_message(message_t *new_message, message_t **message_queue, WINDOW **windows) {
-                  // TEMP
-        // werase(windows[INFO]);
-        // mvwprintw(windows[INFO], 1, 1, "APPEND MSG CALLED\n");
-        // box(windows[INFO], 0, 0);
-        // wrefresh(windows[INFO]);
-        // sleep(1);
-  
-  message_t **tmp = message_queue; // TODO rename tmp, msg?
-  while (*tmp != NULL) {
-    tmp = &(*tmp)->next;
+void append_message(msg_t *new_message, msg_t **message_queue, WINDOW **windows) {
+  msg_t **msg = message_queue;
+  while (*msg != NULL) {
+    msg = &(*msg)->next;
   }
-  new_message->next = *tmp; // *tmp == NULL
-  *tmp = new_message;
-    // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "APPENDING MSG: %s\n", (*tmp)->packet->body);
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
+  new_message->next = *msg; // *msg is NULL
+  *msg = new_message;
 }
 
 
 /* remove message from queue */
 
 
-void remove_message(message_t *message, message_t **message_queue, WINDOW **windows) {
-        // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "REMOVE MSG CALLED\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
+void remove_message(msg_t *message, msg_t **message_queue, WINDOW **windows) {
   // TODO not super happy with this strcmp 
-  message_t *del, **p = message_queue;
+  msg_t *del, **p = message_queue;
   while (*p != NULL && strcmp((**p).packet->body, message->packet->body) != 0) {
-    p = &(*p)->next;                                        // set p to the address of the next el until the next el is target
+    p = &(*p)->next;
   }
-  if (p) {                                                  // if not null (will be null (->next) if target not found)
+  if (p) {  // p is null if target not found
     del = *p;
     *p = del->next;
     free(del);
   }
-    // TEMP
-    // werase(windows[INFO]);
-    // mvwprintw(windows[INFO], 1, 1, "REMOVe MSG DONE\n");
-    // box(windows[INFO], 0, 0);
-    // wrefresh(windows[INFO]);
-    // sleep(1);
 }
 
 
 /* free remaining messages in queue */
 
 
-void free_messages(message_t **message_queue) {
-  message_t *del, *message = *message_queue;
+int free_messages(msg_t **message_queue) {
+  if (message_queue == NULL) {
+    return 1;
+  }
+  
+  msg_t *del, *message = *message_queue;
   while (message != NULL) {
     del = message;
     message = del->next;
     free(del);
   }
+  
+  *message_queue = NULL;
+  return 0;
 }

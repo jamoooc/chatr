@@ -9,5 +9,6 @@ void remove_pfd(struct pollfd pfds[], int i, nfds_t *fd_count);
 // description
 struct pollfd *create_pfds_array(nfds_t nfds);
 // description
+void free_pfds(struct pollfd *pfds[], nfds_t *nfds);
 
 #endif

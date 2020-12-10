@@ -11,12 +11,12 @@
 
 
 int main(int argc, char *argv[]) {
-  options_t options = { 0, 0 }; // TODO maybe put a ptr to this in args_t??? what need from it?
-  int opt = 0;                  // to hold argv char, set to -1 at argv EOF
+  options_t options = { 0, 0 };
+  int opt = 0; // to hold argv char, set to -1 at argv EOF
   opterr = 0;
 
   // minimum args
-  if (argc < 2) {
+  if (argc < 3) {
     usage(argv[0], opt);
     exit(EXIT_FAILURE);
   }
@@ -25,35 +25,29 @@ int main(int argc, char *argv[]) {
   while ((opt = getopt(argc, argv, OPTSTR)) != EOF) {
     switch (opt) {
       case 'p':
-        options.port = atoi(optarg);
-        if ((valid_port(options.port)) == false) {
+        if ((valid_port(optarg)) == false) {
           usage(basename(argv[0]), opt);
           exit(EXIT_FAILURE);
-        };
+        } else {
+          options.port = strtol(optarg, NULL, 10);
+        }
         break;
       case 'v':
         printf("%s version %s\n", basename(argv[0]), VERSION);
         exit(EXIT_SUCCESS);
         break;
-      case 'h': // help
+      case 'h':
       default:
         usage(basename(argv[0]), opt);
         break;
     }
   }
-  
-  // non-option arguments are moved to end of argv
-  if (optind < argc) {
-    while (optind < argc) {
-      // printf("%s\n", argv[optind++]);
-    }
-  }
 
   // linked lists
-  int client_socket; // reused by accept_connection for pfds
+  int client_socket; // copied to pfd for each client
   int server_socket;
   client_t *client_list = NULL;
-  message_t *message_queue = NULL;
+  msg_t *message_queue = NULL;
 
   // poll
   nfds_t nfds = N_PFDS;
@@ -64,15 +58,13 @@ int main(int argc, char *argv[]) {
   WINDOW **windows = create_windows_array(N_WINDOWS);
   init_curses(windows);
 
-  // args object // TODO put this in a func?
+  // args object
   args_t *args = malloc(sizeof(args_t));
   args->quit = 1;
   args->port = options.port;
   args->server_socket = &server_socket;
   args->client_list = &client_list;
   args->message_queue = &message_queue;
-
-  // TODO separate struct for pfds?
   args->pfds = pfds;
   args->fd_count = &fd_count;
   args->nfds = &nfds;
@@ -107,113 +99,41 @@ int main(int argc, char *argv[]) {
     // server socket for client connection
     if (args->pfds[1].revents & POLLIN) {
       accept_connection(args->pfds[1].fd, args, windows);
-                  // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "ACCEPT CONNECTION\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
       print_clients(args->active_client, args->client_list, windows);
-                  // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "ACCEPT CONNECTION DONE\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
     }
 
     // client fds
     for (int i = MIN_CLIENT_SOCK; i < fd_count; i++) {
-            //     // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "LOOPING FDS: i: %i, fd: %i\n", i, args->pfds[i].fd);
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
-      // unset fds are < 0 // TODOD IS THIS CAUSING FREEZE?
+      // unset fds are < 0
       if (args->pfds[i].fd < 0) {
-          //  werase(windows[INFO]);
-          //   mvwprintw(windows[INFO], 1, 1, "PFD < 0 I: %i fd: %i\n", i , args->pfds[i].fd);
-          //   box(windows[INFO], 0, 0);
-          //   wrefresh(windows[INFO]);
-          //   sleep(1);
         i++;
         continue;
       }
 
       // socket error
       if (args->pfds[i].revents & POLLERR) {
-        // TEMP
-        // werase(windows[INFO]);
-        // mvwprintw(windows[INFO], 1, 1, "POLLERR\n");
-        // box(windows[INFO], 0, 0);
-        // wrefresh(windows[INFO]);
-        // sleep(1);
         perror("revents socket");
         exit(EXIT_FAILURE);
       }
 
       // check for client hangup 
       if (args->pfds[i].revents & POLLHUP) {
-        // TEMP
-        // werase(windows[INFO]);
-        // mvwprintw(windows[INFO], 1, 1, "POLLHUP\n");
-        // box(windows[INFO], 0, 0);
-        // wrefresh(windows[INFO]);
-        // sleep(1);
-        disconnect_client(args->pfds[i].fd, i, args, windows); // TODO dont use duplicate args...
+        disconnect_client(i, args, windows);
         i++;
         continue;
       }
 
       // socket ready to recieve
       if (args->pfds[i].revents & POLLIN) {
-        // TEMP
-        // werase(windows[INFO]);
-        // mvwprintw(windows[INFO], 1, 1, "POLLIN RECEIVE PACKET CALLED\n");
-        // box(windows[INFO], 0, 0);
-        // wrefresh(windows[INFO]);
-        // sleep(1);
         receive_packet(i, args, windows);
-
-        // werase(windows[INFO]);
-        // mvwprintw(windows[INFO], 1, 1, "POLLIN RECEIVE PACKET DONE\n");
-        // box(windows[INFO], 0, 0);
-        // wrefresh(windows[INFO]);
-        // sleep(1);
       }
 
       // if message in queue & socket ready, send any msg for that socket
       if (args->pfds[i].revents & POLLOUT) {
-        // TEMP
-        // werase(windows[INFO]);
-        // mvwprintw(windows[INFO], 1, 1, "POLLOUT\n");
-        // box(windows[INFO], 0, 0);
-        // wrefresh(windows[INFO]);
-        // sleep(1);
-
-        message_t *message = *args->message_queue;
+        msg_t *message = *args->message_queue;
         while (message != NULL) {
-            // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "POLLOUT MSG IN Q\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
           if (message->client->socket == args->pfds[i].fd) {
-            // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "TRANSMIT CALLED\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
             transmit_packet(message, args, windows);
-            // TEMP
-            // werase(windows[INFO]);
-            // mvwprintw(windows[INFO], 1, 1, "TRANSMIT DONE\n");
-            // box(windows[INFO], 0, 0);
-            // wrefresh(windows[INFO]);
-            // sleep(1);
           }
           message = message->next;
         }
@@ -221,13 +141,12 @@ int main(int argc, char *argv[]) {
     }
   }
 
-
-
   // free everything
+  free(args->pfds);
   free_clients(args->client_list);
   free_messages(args->message_queue);
-  free_windows(windows);
-  // free_windows(args->windows);
+  free_windows(windows); // individuals windows
+  free(windows); // windows array
   exit_screen();
   endwin(); // end curses
   close(server_socket);

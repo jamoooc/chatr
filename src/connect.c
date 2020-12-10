@@ -3,25 +3,16 @@
 #include "client.h"
 #include "pfds.h"
 
-// receive and transmit proba shoulnt be in here....
-
 
 /* transmit_packet */
 
 
-void transmit_packet(message_t *message, args_t *args, WINDOW **windows) {
-      // TEMP
-    // werase(windows[INFO]);
-    // mvwprintw(windows[INFO], 1, 1, "TRANSMIT PACKET CALLED\n");
-    // box(windows[INFO], 0, 0);
-    // wrefresh(windows[INFO]);
-    // sleep(1);
+void transmit_packet(msg_t *message, args_t *args, WINDOW **windows) {
   // check socket is valid and send packet
   int send_bytes;
   if ((send_bytes = send(message->client->socket, message->packet, sizeof(packet_t), 0)) == -1) {
     perror("send");
     exit(EXIT_FAILURE);
-    // TODO handle if client has gone offline since message entered queue?? will be -1. mayb no exit(), return?
   }
 
   // store packet before message free'd
@@ -35,13 +26,6 @@ void transmit_packet(message_t *message, args_t *args, WINDOW **windows) {
   // add to history and remove message from queue
   insert_history(message->packet, message->client, args, windows);
   remove_message(message, args->message_queue, windows);
-    
-    // TEMP
-    // werase(windows[INFO]);
-    // mvwprintw(windows[INFO], 1, 1, "TRANSMIT PACKET DONE\n");
-    // box(windows[INFO], 0, 0);
-    // wrefresh(windows[INFO]);
-    // sleep(1);
 }
 
 
@@ -60,34 +44,21 @@ void receive_packet(int pfd_index, args_t *args, WINDOW **windows) {
 
   if ((recv_bytes = recv(args->pfds[pfd_index].fd, packet, sizeof(packet_t), recv_flags)) == -1) {
     perror("recv");
-    // exit(EXIT_FAILURE); // TODO don't quit on error,do summin??? look into this
+    // exit(EXIT_FAILURE); // TODO don't exit on recv err
   }
 
   if (recv_bytes > 0) {
-    // TODO is there a more efficient way of doing this...?
     client_t *client = *args->client_list;
     while (client->socket != args->pfds[pfd_index].fd) {
       client = client->next;
     }
-    // TEMP
-    // werase(windows[INFO]);
-    // mvwprintw(windows[INFO], 1, 1, "RECEIVE PACKET CALLED INSERT HIST\n");
-    // box(windows[INFO], 0, 0);
-    // wrefresh(windows[INFO]);
-    // sleep(1);
     insert_history(packet, client, args, windows);
-    // TEMP
-    // werase(windows[INFO]);
-    // mvwprintw(windows[INFO], 1, 1, "RECEIVE PACKET, INSERT HIST DONE\n");
-    // box(windows[INFO], 0, 0);
-    // wrefresh(windows[INFO]);
-    // sleep(1);
   } else {
-    // catch disconnects missed by pollhup and errors
+    // catch disconnects missed by pollhup
     if (recv_bytes < 0) {
       perror("recv");
     }
-    disconnect_client(args->pfds[pfd_index].fd, pfd_index, args, windows);
+    disconnect_client(pfd_index, args, windows);
   }
 }
 
@@ -102,7 +73,7 @@ void init_server(int *server_socket, args_t *args, WINDOW **windows) {
     exit(EXIT_FAILURE);
   };
 
-  // create servers IP/port tuple to bind to listening socket
+  // create server IP/port tuple to bind to listening socket
   struct sockaddr_in server_address;
   server_address.sin_family = AF_INET;
   server_address.sin_port = htons(args->port);
@@ -127,7 +98,6 @@ void init_server(int *server_socket, args_t *args, WINDOW **windows) {
     exit(EXIT_FAILURE);
   };
 
-  // args->server_addr = server_address;
   char address_buffer[INET_ADDRSTRLEN];
   socklen_t addr_len = strlen(address_buffer);
   inet_ntop(AF_INET, &server_address.sin_addr.s_addr, address_buffer, INET_ADDRSTRLEN);
@@ -159,7 +129,7 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
 
   set_nonblock(client_socket);
 
-  // destination string for inet_ntop TODO  use INET6 for when using getaddrinfo
+  // destination string for inet_ntop
   char address_string[INET6_ADDRSTRLEN];
   inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, address_string, INET6_ADDRSTRLEN);
 
@@ -173,18 +143,12 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   snprintf(username, 8, "user%i", client_socket);
 
   // add to client list and pfds
-  client_t *client = create_client(client_socket, username, client_addr);
+  client_t *client = create_client(client_socket, username);
   append_client(client, args->client_list, args, windows);
   insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if only client, set to active user
   if (args->active_client == NULL) {
-    // TEMP
-    // werase(windows[INFO]);
-    // mvwprintw(windows[INFO], 1, 1, "ACCEPT CLIENT CALLED SET_ACTIVE _CLIENT\n");
-    // box(windows[INFO], 0, 0);
-    // wrefresh(windows[INFO]);
-    // sleep(1);
     set_active_client(username, args, windows);
   }
 }
@@ -196,7 +160,6 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
 void set_nonblock(int socket) {
   int flags;
   flags = fcntl(socket, F_GETFL, 0); // get any existing flags
-  // assert(flags != -1);
   fcntl(socket, F_SETFL, flags | O_NONBLOCK); // set non-blocking flag
 }
 

@@ -24,13 +24,13 @@ void welcome_screen(void) {
   y = (LINES / 2) - 4;
   x = COLS / 2;
 
-  mvwprintw(welcome_win, y, x - (strlen(WELCOME_MSG) / 2), WELCOME_MSG);
-  mvwprintw(welcome_win, y + 2, x - (strlen(HOSTNAME_MSG) / 2), HOSTNAME_MSG);
-  mvwprintw(welcome_win, y + 3, x - (strlen(CLIENTNAME_MSG) / 2), CLIENTNAME_MSG);
-  mvwprintw(welcome_win, y + 4, x - (strlen(SELECT_CLIENT_MSG) / 2), SELECT_CLIENT_MSG);
-  mvwprintw(welcome_win, y + 5, x - (strlen(CONNET_MSG) / 2), CONNET_MSG);
-  mvwprintw(welcome_win, y + 6, x - (strlen(QUIT_MSG) / 2), QUIT_MSG);
-  mvwprintw(welcome_win, y + 8, x - (strlen(CONTINUE_MSG) / 2), CONTINUE_MSG);
+  mvwprintw(welcome_win, y,     x - (strlen(WELCOME_MSG) / 2),        WELCOME_MSG);
+  mvwprintw(welcome_win, y + 2, x - (strlen(HOSTNAME_MSG) / 2),       HOSTNAME_MSG);
+  mvwprintw(welcome_win, y + 3, x - (strlen(CLIENTNAME_MSG) / 2),     CLIENTNAME_MSG);
+  mvwprintw(welcome_win, y + 4, x - (strlen(SELECT_CLIENT_MSG) / 2),  SELECT_CLIENT_MSG);
+  mvwprintw(welcome_win, y + 5, x - (strlen(CONNET_MSG) / 2),         CONNET_MSG);
+  mvwprintw(welcome_win, y + 6, x - (strlen(QUIT_MSG) / 2),           QUIT_MSG);
+  mvwprintw(welcome_win, y + 8, x - (strlen(CONTINUE_MSG) / 2),       CONTINUE_MSG);
 
   wrefresh(welcome_win);
   wgetch(welcome_win);
@@ -80,13 +80,14 @@ WINDOW *create_window(dim_t *dim, int box) {
   WINDOW *new_win = newwin(dim->height, dim->width, dim->starty, dim->startx);
   if (new_win == NULL) {
     wprintw(stdscr, "Error creating new window"); // TODO proper error handling
+    perror("create window");
+    exit(EXIT_FAILURE);
   }
   if (box > 0) {
     box(new_win, 0, 0); // draw outline
   }
   wrefresh(new_win);
   free(dim);
-
   return new_win;
 }
 
@@ -97,7 +98,8 @@ WINDOW *create_window(dim_t *dim, int box) {
 dim_t *init_dim(int h, int w, int y, int x) {
   dim_t *dim = malloc(sizeof(dim_t)); // ptr free'd in create_window
   if (dim == NULL) {
-    wprintw(stdscr, "Error creating new window"); // TODO proper error handling!!!
+    // wprintw(stdscr, "Error creating new window"); // TODO proper error handling
+    perror("init dim");
     exit(EXIT_FAILURE);
   }
   dim->height = h;

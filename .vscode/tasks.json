@@ -7,11 +7,37 @@
       "args": [
         "-g",
         "${file}",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}"
+        "test/test-client.c", 
+        "src/utils.c", 
+        "src/client.c", 
+        "src/message.c", 
+        "src/pfds.c",
+        "src/connect.c", 
+        "src/ui.c",
+        "unity/unity.c",
+        "-lncurses"
+        // "-o",
+        // "${fileDirname}/${fileBasenameNoExtension}",
+        // "/Users/jamie/Desktop/sockets/me/tcp/chatr/test/test-client.c", 
+        // "/Users/jamie/Desktop/sockets/me/tcp/chatr/src/utils.c", 
+        // "/Users/jamie/Desktop/sockets/me/tcp/chatr/src/client.c", 
+        // "/Users/jamie/Desktop/sockets/me/tcp/chatr/src/message.c", 
+        // "/Users/jamie/Desktop/sockets/me/tcp/chatr/src/pfds.c",
+        // "/Users/jamie/Desktop/sockets/me/tcp/chatr/src/connect.c", 
+        // "/Users/jamie/Desktop/sockets/me/tcp/chatr/src/ui.c",
+        // "/Users/jamie/Desktop/sockets/me/tcp/chatr/unity/unity.c",
+        // "-lncurses"
+        //         "${fileDirname}/src/utils.c", 
+        // "${fileDirname}/src/client.c", 
+        // "${fileDirname}/src/message.c", 
+        // "${fileDirname}/src/pfds.c",
+        // "${fileDirname}/src/connect.c", 
+        // "${fileDirname}/src/ui.c ",
+        // "${fileDirname}/unity/unity.c",
+        // "-lncurses"
       ],
       "options": {
-        "cwd": "/usr/bin"
+        "cwd": "${workspaceFolder}"
       },
       "problemMatcher": [
         "$gcc"

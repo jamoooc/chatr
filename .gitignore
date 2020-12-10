@@ -6,3 +6,7 @@ chatr
 make/
 .DS_Store
 logfile.txt
+.vscode
+*.dSYM/
+*.out
+logfile.txt

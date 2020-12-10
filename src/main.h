@@ -1,7 +1,7 @@
 #ifndef MAIN_H
   #define MAIN_H
 
-// all these includes not needed here? move to correct headers
+// move includes to correct headers
 
 #include <ncurses.h>
 #include <stdio.h>
@@ -26,13 +26,13 @@
 /* integer constants */
 
 
-// #define DEFAULT_PORT 9876 // TODO use default if not set??
-#define BACKLOG         10
-#define USERNAME_LEN    30
-#define BUFFER_LEN      256
-#define MIN_CLIENT_SOCK 2
-#define N_WINDOWS       6
-#define N_PFDS          3 // initial val, realloc'd as necessary
+// #define DEFAULT_PORT 9876 // TODO use default if no cl arg
+#define BACKLOG           10
+#define USERNAME_LEN      30
+#define BUFFER_LEN        256
+#define MIN_CLIENT_SOCK   2
+#define N_WINDOWS         6
+#define N_PFDS            3 // initial val, realloc'd
 
 
 /* string constants */
@@ -48,10 +48,10 @@
 #define ACTIVE_CLIENT_SET "Active client set to"
 #define UNKNOWN_CLIENT    "Unknown client"
 
-
-extern int errno; // used by std C lib for error communication
-extern char *optarg; // ptr to option argument
-extern int opterr, optind; // used by getopt()
+// TODO i don't think i should do this - https://stackoverflow.com/a/46013600/11350846
+extern int errno;           // used by std C lib for error communication
+extern char *optarg;        // ptr to option argument
+extern int opterr, optind;  // used by getopt()
 
 
 /* windows enum */
@@ -101,14 +101,14 @@ typedef struct client {
   struct client       *next;
 } client_t; 
 
-/* message_t - queue messages linked list */
+/* msg_t - queue messages linked list */
 
 typedef struct message {
   int                 socket;
   client_t            *client;
   packet_t            *packet;
   struct message      *next;
-} message_t;
+} msg_t;
 
 /* arguments */
 
@@ -123,8 +123,8 @@ typedef struct args {
   nfds_t              *nfds;
   nfds_t              *fd_count;
   client_t            **client_list;
-  message_t           **message_queue;
-  WINDOW              **windows;
+  msg_t           **message_queue;
+  // WINDOW              **windows;
 } args_t;
 
 /* pollfds */
@@ -138,7 +138,7 @@ typedef struct pollfds {
 
 /* prototypes */
 
+// print usage to command line
 void usage(char *progname, int opt);
-// description
 
 #endif /* MAIN_H */
