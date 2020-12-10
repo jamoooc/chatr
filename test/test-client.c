@@ -120,7 +120,7 @@ void test_set_active_client(void) {
 
   args_t *args = malloc(sizeof(args_t));
   client_t *client_list = NULL;
-  message_t *message_queue = NULL;
+  msg_t *message_queue = NULL;
 
   nfds_t nfds = N_PFDS;
   nfds_t fd_count = 0;

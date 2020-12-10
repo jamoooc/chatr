@@ -17,27 +17,15 @@ void tearDown() {
 
 }
 
-void test_create_pfds_array(void) {
-
-}
-
-void test_insert_pfd(void) {
-
-}
-
-void test_remove_pfd(void) {
-
-}
-
-void test_free_pfd(void) {
-
+void test_main(void) {
+  TEST_IGNORE_MESSAGE("todo");
 }
 
 
 int main(void) {
   // printf("unity\n");
   UNITY_BEGIN();
-  // RUN_TEST();
+  RUN_TEST(test_main);
 
   return UNITY_END();
 }

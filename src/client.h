@@ -13,7 +13,7 @@ void append_client(client_t *new_client, client_t **client_list, args_t *args, W
 int add_client(char *input, args_t *args, WINDOW **windows);
 int set_active_client(char *input_user, args_t *args, WINDOW **windows);
 int set_client_username(char *input, args_t *args, WINDOW **windows);
-int remove_client(int socket, client_t **client_list);
+int remove_client(int socket, client_t **client_list, WINDOW **windows);
 int free_clients(client_t **client_list);
 int free_history(history_t *history);
 
