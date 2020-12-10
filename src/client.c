@@ -223,12 +223,6 @@ void disconnect_client(int pfd_index, args_t *args, WINDOW **windows) {
   // get disconnected client username
   client_t *client = *args->client_list;
   while (client->socket != args->pfds[pfd_index].fd) {
-    // ADD A TEST HERE 
-          werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "CLIENT %i", client->socket);
-    box(windows[INFO], 0, 0);
-    wrefresh(windows[INFO]);
-    sleep(3);
     client = client->next;
   }
 
@@ -250,23 +244,8 @@ void disconnect_client(int pfd_index, args_t *args, WINDOW **windows) {
 
   // remove from client / pfd list and close socket
   close(args->pfds[pfd_index].fd);
-      werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "remove pfd");
-    box(windows[INFO], 0, 0);
-    wrefresh(windows[INFO]);
-  sleep(1);
-  remove_pfd(args->pfds, pfd_index, args->fd_count);
-      werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "remove_cleintTEST %i", args->pfds[pfd_index].fd);
-    box(windows[INFO], 0, 0);
-    wrefresh(windows[INFO]);
-  sleep(3);
   remove_client(args->pfds[pfd_index].fd, args->client_list, windows);
-      werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "print_clients");
-    box(windows[INFO], 0, 0);
-    wrefresh(windows[INFO]);
-  sleep(1);
+  remove_pfd(args->pfds, pfd_index, args->fd_count);
   print_clients(args->active_client, args->client_list, windows);
 }
 
@@ -278,38 +257,19 @@ int remove_client(int socket, client_t **client_list, WINDOW **windows) {
   if (socket < 0) {
     return 1; // TEMP add to test - if sock -1 exit
   }
-    werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "remove client called SOCK = %i", socket);
-    box(windows[INFO], 0, 0);
-    wrefresh(windows[INFO]);
-    sleep(1);
 
   client_t *del, **p = client_list;
   while (*p && (**p).socket != socket) {    // while ptr is not null, and next doesnt match target  
     p = &(*p)->next;                        // set p to the address of the next el
   }
-      werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "remove client MIDDLE");
-    box(windows[INFO], 0, 0);
-    wrefresh(windows[INFO]);
-    sleep(1);
   if (p) {                                  // if not null (is null if target not found)
     del = *p;
-    werase(windows[INFO]);
-    mvwprintw(windows[INFO], 1, 1, "IN IF %p", del->next);
-    box(windows[INFO], 0, 0);
-    wrefresh(windows[INFO]);
     *p = del->next;
     free(del);
     return 0;
   } else {
     return 1; // client doesn't exist
   }
-
-  //     werase(windows[INFO]);
-  //   mvwprintw(windows[INFO], 1, 1, "remove client done");
-  //   box(windows[INFO], 0, 0);
-  //   wrefresh(windows[INFO]);
 }
 
 
