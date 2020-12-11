@@ -144,7 +144,7 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
 
   // add to client list and pfds
   client_t *client = create_client(client_socket, username);
-  append_client(client, args->client_list, args, windows);
+  append_client(client, args, windows);
   insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if only client, set to active user

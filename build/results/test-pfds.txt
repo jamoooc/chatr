@@ -1,0 +1,8 @@
+test_pfds
+./test/test-pfds.c:88:test_create_pfds_array:PASS
+./test/test-pfds.c:89:test_insert_pfd:PASS
+./test/test-pfds.c:90:test_remove_pfd:PASS
+
+-----------------------
+3 Tests 0 Failures 0 Ignored 
+OK

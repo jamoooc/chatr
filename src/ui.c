@@ -79,7 +79,6 @@ WINDOW **create_windows_array(int n) {
 WINDOW *create_window(dim_t *dim, int box) {
   WINDOW *new_win = newwin(dim->height, dim->width, dim->starty, dim->startx);
   if (new_win == NULL) {
-    wprintw(stdscr, "Error creating new window"); // TODO proper error handling
     perror("create window");
     exit(EXIT_FAILURE);
   }
@@ -98,7 +97,6 @@ WINDOW *create_window(dim_t *dim, int box) {
 dim_t *init_dim(int h, int w, int y, int x) {
   dim_t *dim = malloc(sizeof(dim_t)); // ptr free'd in create_window
   if (dim == NULL) {
-    // wprintw(stdscr, "Error creating new window"); // TODO proper error handling
     perror("init dim");
     exit(EXIT_FAILURE);
   }

@@ -7,12 +7,6 @@
 #include "../src/pfds.h"
 #include "../src/ui.h"
 
-// gcc ../test/test-client.c ../src/utils.c ../src/client.c ../src/message.c ../src/pfds.c ../src/connect.c ../src/ui.c ../unity/unity.c -lncurses
-
-// to test ncurses https://invisible-island.net/ncurses/man/curs_scr_dump.3x.html
-
-// TODO segmentation fault when tests run together? what resource is being shared?
-
 
 void setUp() {
 
@@ -47,8 +41,8 @@ void test_append_client(void) {
   client_t *client1 = create_client(5, "one");
   client_t *client2 = create_client(6, "two");
 
-  append_client(client1, args->client_list, args, windows);
-  append_client(client2, args->client_list, args, windows);
+  append_client(client1, args, windows);
+  append_client(client2, args, windows);
 
   TEST_ASSERT_NOT_NULL(client_list);
   TEST_ASSERT_EQUAL_INT(5, client_list->socket);
@@ -136,8 +130,8 @@ void test_set_active_client(void) {
 
   client_t *client = create_client(4, user1);
   client_t *client1 = create_client(5, user2);
-  append_client(client, args->client_list, args, windows);
-  append_client(client1, args->client_list, args, windows);
+  append_client(client, args, windows);
+  append_client(client1, args, windows);
 
   int rv = 0;
 
@@ -186,8 +180,8 @@ void test_set_client_username(void) {
 
   client_t *client1 = create_client(4, user1);
   client_t *client2 = create_client(5, user2);
-  append_client(client1, args->client_list, args, windows);
-  append_client(client2, args->client_list, args, windows);
+  append_client(client1, args, windows);
+  append_client(client2, args, windows);
 
   int rv = 0;
 
@@ -354,10 +348,8 @@ void test_free_clients(void) {
 
 
 
-// REFACTOR ALLA PRINT_CLIENTSSSS
 void test_free_history(void) {
   history_t *head = NULL;
-  // TODO bit hakcy, dbl ptrs for head?
   int i = 0;
   while (i < 5) {
     packet_t *packet = malloc(sizeof(packet_t));
@@ -383,11 +375,6 @@ void test_free_history(void) {
   int rv = 0;
   rv = free_history(head);
   TEST_ASSERT_EQUAL_INT(0, rv);
-  
-  // rewrite the function to use a dbl ptr
-  // TEST_ASSERT_NULL(head);
-
-  // https://stackoverflow.com/questions/8300853/how-to-check-if-a-pointer-is-freed-already-in-c
 }
 
 

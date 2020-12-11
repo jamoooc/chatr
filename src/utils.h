@@ -22,7 +22,9 @@ void assist(char *input, args_t *args, WINDOW **windows); // maybe not in here
 // description
 int set_host_username(char *input, args_t *args, WINDOW **windows);
 // description
-int process_input(args_t *args, WINDOW **windows);
+void get_input(args_t *args, WINDOW **windows);
+// description
+int process_input(char *input, args_t *args, WINDOW **windows);
 // description
 void handle_error(int e, const char *str);
 // description

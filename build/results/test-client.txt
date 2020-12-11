@@ -1,0 +1,15 @@
+test-client.c
+./test/test-client.c:384:test_create_client:PASS
+./test/test-client.c:385:test_append_client:PASS
+./test/test-client.c:386:test_add_client:PASS
+./test/test-client.c:387:test_set_active_client:PASS
+./test/test-client.c:388:test_set_client_username:PASS
+./test/test-client.c:389:test_remove_client:PASS
+./test/test-client.c:317:test_print_clients:IGNORE: This Test Was Ignored On Purpose
+./test/test-client.c:224:test_disconnect_client:IGNORE: This Test Was Ignored On Purpose
+./test/test-client.c:392:test_free_clients:PASS
+./test/test-client.c:393:test_free_history:PASS
+
+-----------------------
+10 Tests 0 Failures 2 Ignored 
+OK

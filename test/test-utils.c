@@ -191,7 +191,7 @@ void test_remove_newline(void) {
   free(str5);
 }
 
-void test_remove_whitespace(void) {
+void test_remove_trailing_whitespace(void) {
   char *str1 = malloc(sizeof(char) * 6);
   char *str2 = malloc(sizeof(char) * 11);
   char *str3 = malloc(sizeof(char) * 15);
@@ -239,6 +239,18 @@ void test_remove_whitespace(void) {
   TEST_ASSERT_EQUAL_STRING("   leave leading space",      str9);
   TEST_ASSERT_EQUAL_STRING("removes tabs",                str10);
   TEST_ASSERT_EQUAL_STRING("removes newlines",            str11);
+
+  free(str1);
+  free(str2);
+  free(str3);
+  free(str4);
+  free(str5);
+  free(str6);
+  free(str7);
+  free(str8);
+  free(str9);
+  free(str10);
+  free(str11);
 }
 
 void test_handle_error() {
@@ -254,6 +266,6 @@ int main(void) {
   RUN_TEST(test_valid_username);
   RUN_TEST(test_remove_first_char);
   RUN_TEST(test_remove_newline);
-  RUN_TEST(test_remove_whitespace);
+  RUN_TEST(test_remove_trailing_whitespace);
   return UNITY_END();
 }

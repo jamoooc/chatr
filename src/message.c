@@ -73,7 +73,7 @@ int print_history(client_t *client, args_t *args, WINDOW **windows) {
 /* create_message */
 
 
-msg_t *create_message(char *message_body, client_t *client, args_t *args, WINDOW **windows) {
+msg_t *create_message(char *message_body, args_t *args, WINDOW **windows) {
   // create packet for message struct
   packet_t *packet = malloc(sizeof(packet_t));
   if (packet == NULL) {
@@ -92,7 +92,7 @@ msg_t *create_message(char *message_body, client_t *client, args_t *args, WINDOW
     exit(EXIT_FAILURE);
   }
 
-  message->client = client;
+  message->client = args->active_client;
   message->packet = packet;
   message->next = NULL;
 

@@ -31,15 +31,15 @@ client_t *create_client(int socket, char *username) {
 /* append_client to linked list */
 
 
-void append_client(client_t *new_client, client_t **client_list, args_t *args, WINDOW **windows) {
-  client_t **tmp = client_list;
+void append_client(client_t *new_client, args_t *args, WINDOW **windows) {
+  client_t **tmp = args->client_list;
   while (*tmp != NULL) {
     tmp = &(*tmp)->next;
   }
   new_client->next = *tmp;  // *tmp is NULL
   *tmp = new_client;
 
-  print_clients(args->active_client, client_list, windows);
+  print_clients(args->active_client, args->client_list, windows);
 }
 
 
@@ -125,7 +125,7 @@ int add_client(char *input, args_t *args, WINDOW **windows) {
 
   // add to client list and pfds
   client_t *client = create_client(client_socket, username);
-  append_client(client, args->client_list, args, windows);
+  append_client(client, args, windows);
   insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if no client, set to active client
@@ -170,7 +170,10 @@ int set_active_client(char *username, args_t *args, WINDOW **windows) {
 
   // if username not found
   werase(windows[INFO]);
-  mvwprintw(windows[INFO], 1, 1, "%s. %s: %s.\n", UNKNOWN_CLIENT, ACTIVE_CLIENT_SET, args->active_client);
+  mvwprintw(windows[INFO], 1, 1, "%s. %s: %s.\n", 
+    UNKNOWN_CLIENT, ACTIVE_CLIENT_SET, 
+    args->active_client->username);
+    // ? args->active_client : "Not set.");
   box(windows[INFO], 0, 0);
   wrefresh(windows[INFO]);
   return 2;
@@ -244,7 +247,7 @@ void disconnect_client(int pfd_index, args_t *args, WINDOW **windows) {
 
   // remove from client / pfd list and close socket
   close(args->pfds[pfd_index].fd);
-  remove_client(args->pfds[pfd_index].fd, args->client_list, windows);
+  remove_client(args->pfds[pfd_index].fd, args->client_list);
   remove_pfd(args->pfds, pfd_index, args->fd_count);
   print_clients(args->active_client, args->client_list, windows);
 }
@@ -253,9 +256,9 @@ void disconnect_client(int pfd_index, args_t *args, WINDOW **windows) {
 /* free single client sockets linked list */
 
 
-int remove_client(int socket, client_t **client_list, WINDOW **windows) {
+int remove_client(int socket, client_t **client_list) {
   if (socket < 0) {
-    return 1; // TEMP add to test - if sock -1 exit
+    return 1;
   }
 
   client_t *del, **p = client_list;

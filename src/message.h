@@ -9,7 +9,7 @@ void append_history(history_t *new, history_t *history);
 void append_message(msg_t *new_message, msg_t **message_queue, WINDOW **windows);
 void remove_message(msg_t *message, msg_t **message_queue, WINDOW **windows);
 void print_messages(msg_t **message_queue);
-msg_t *create_message(char *message_body, client_t *active_client, args_t *args, WINDOW **windows);
+msg_t *create_message(char *message_body, args_t *args, WINDOW **windows);
 int free_messages(msg_t **message_queue);
 
 #endif /* MESSAGE_H */

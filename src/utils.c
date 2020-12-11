@@ -7,7 +7,7 @@
 /* process_input */
 
 
-int process_input(args_t *args, WINDOW **windows) {
+void get_input(args_t *args, WINDOW **windows) {
 
   char input_buffer[BUFFER_LEN];
   wgetnstr(windows[INPUT], input_buffer, BUFFER_LEN);
@@ -15,11 +15,15 @@ int process_input(args_t *args, WINDOW **windows) {
   werase(windows[INPUT]);
   wmove(windows[INPUT], 0, 0);
   wrefresh(windows[INPUT]);
-  
+ 
+  process_input(input_buffer, args, windows);
+}
+
+int process_input(char *input_buffer, args_t *args, WINDOW **windows) {
   // check for exit condition
   if (strcmp(input_buffer, "/quit") == 0) {
     args->quit = 0;
-    return 0;
+    return 1;
   }
 
   switch (input_buffer[0]) {
@@ -39,7 +43,7 @@ int process_input(args_t *args, WINDOW **windows) {
       // create message for queue
       if (args->active_client != NULL) {
         // create message
-        msg_t *message = create_message(input_buffer, args->active_client, args, windows);
+        msg_t *message = create_message(input_buffer, args, windows);
         append_message(message, args->message_queue, windows);
       } else {
         werase(windows[INFO]);
@@ -52,7 +56,6 @@ int process_input(args_t *args, WINDOW **windows) {
   }
   return 0;
 }
-
 
 /* set_host_username */
 
@@ -171,7 +174,10 @@ int remove_newline(char *input) {
 }
 
 
-// TODO - maybe use this instead of remove_newline as it removes newline too
+/* remove_trailing_whitespace */
+
+
+// removes any whitespace character
 void remove_trailing_whitespace(char *input) {
   int i = 0, last = 0;
   while (input[i] != '\0') {

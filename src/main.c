@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 
     // stdin
     if (args->pfds[0].revents & POLLIN) {
-      process_input(args, windows);
+      get_input(args, windows);
     }
 
     // server socket for client connection
