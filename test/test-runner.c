@@ -5,11 +5,6 @@
 #include "test-utils.c"
 #include "test-message.c"
 
-
-// this works for now MAKEFILE!
-// gcc ../test/test-message.c ../src/utils.c ../src/client.c ../src/message.c ../src/pfds.c ../src/connect.c ../src/ui.c ../unity/unity.c -lncurses
-
-
 void setUp() {
 
 }

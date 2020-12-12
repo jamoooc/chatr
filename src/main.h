@@ -26,13 +26,12 @@
 /* integer constants */
 
 
-// #define DEFAULT_PORT 9876 // TODO use default if no cl arg
 #define BACKLOG           10
 #define USERNAME_LEN      30
 #define BUFFER_LEN        256
 #define MIN_CLIENT_SOCK   2
 #define N_WINDOWS         6
-#define N_PFDS            3 // initial val, realloc'd
+#define N_PFDS            3 // initial val
 
 
 /* string constants */
@@ -48,7 +47,6 @@
 #define ACTIVE_CLIENT_SET "Active client set to"
 #define UNKNOWN_CLIENT    "Unknown client"
 
-// TODO i don't think i should do this - https://stackoverflow.com/a/46013600/11350846
 extern int errno;           // used by std C lib for error communication
 extern char *optarg;        // ptr to option argument
 extern int opterr, optind;  // used by getopt()
@@ -123,8 +121,7 @@ typedef struct args {
   nfds_t              *nfds;
   nfds_t              *fd_count;
   client_t            **client_list;
-  msg_t           **message_queue;
-  // WINDOW              **windows;
+  msg_t               **message_queue;
 } args_t;
 
 /* pollfds */

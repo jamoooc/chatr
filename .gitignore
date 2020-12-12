@@ -1,7 +1,6 @@
 *.o
 *.d
 TODO.md
-README.md
 chatr
 make/
 .DS_Store
@@ -11,3 +10,4 @@ logfile.txt
 *.out
 logfile.txt
 *.txt
+*.h.gch

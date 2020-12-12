@@ -27,7 +27,7 @@ TARGET = chatr
 TEST = build/tests.out
 TEST_RUNNER = test/test-runner.c
 
-COMPILE = gcc -c
+COMPILE = gcc -c -g
 LINK = gcc
 CFLAGS = -I $(PATHS)
 LIBS = -lncurses
@@ -49,9 +49,9 @@ $(TARGET): $(OBJECTS)
 $(PATHO)%.o:: $(PATHS)%.c
 	$(COMPILE) $(CFLAGS) $< -o $@
 
-# create dependency files
-$(PATHD)%.d:: $(PATHS)%.c
-	$(DEPEND) $@ $<
+# # create dependency files
+# $(PATHD)%.d:: $(PATHS)%.c
+# 	$(DEPEND) $@ $<
 
 .PHONY: test
 .PHONY: clean
