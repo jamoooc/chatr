@@ -173,7 +173,6 @@ int set_active_client(char *username, args_t *args, WINDOW **windows) {
   mvwprintw(windows[INFO], 1, 1, "%s. %s: %s.\n", 
     UNKNOWN_CLIENT, ACTIVE_CLIENT_SET, 
     args->active_client->username);
-    // ? args->active_client : "Not set.");
   box(windows[INFO], 0, 0);
   wrefresh(windows[INFO]);
   return 2;

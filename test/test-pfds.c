@@ -7,15 +7,17 @@
 #include "../src/pfds.h"
 #include "../src/ui.h"
 
+// #include "test-client.c"
+
 // gcc ../test/test-client.c ../src/utils.c ../src/client.c ../src/message.c ../src/pfds.c ../src/connect.c ../src/ui.c ../unity/unity.c -lncurses
 
-void setUp() {
+// void setUp() {
 
-}
+// }
 
-void tearDown() {
+// void tearDown() {
 
-}
+// }
 
 void test_create_pfds_array(void) {
   nfds_t nfds = N_PFDS;
@@ -82,11 +84,25 @@ void test_remove_pfd(void) {
 
 
 
-int main(void) {
-  printf("test_pfds\n");
-  UNITY_BEGIN();
-  RUN_TEST(test_create_pfds_array);
-  RUN_TEST(test_insert_pfd);
-  RUN_TEST(test_remove_pfd);
-  return UNITY_END();
-}
+// int main(void) {
+//   printf("test_pfds\n");
+//   UNITY_BEGIN();
+//   RUN_TEST(test_create_pfds_array);
+//   RUN_TEST(test_insert_pfd);
+//   RUN_TEST(test_remove_pfd);
+
+
+//   RUN_TEST(test_create_client);
+//   RUN_TEST(test_append_client);
+//   RUN_TEST(test_add_client);
+//   RUN_TEST(test_set_active_client);
+//   RUN_TEST(test_set_client_username);
+//   RUN_TEST(test_remove_client);
+//   RUN_TEST(test_print_clients);
+//   RUN_TEST(test_disconnect_client);
+//   RUN_TEST(test_free_clients);
+//   RUN_TEST(test_free_history);
+
+
+//   return UNITY_END();
+// }

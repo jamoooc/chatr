@@ -8,13 +8,13 @@
 #include "../src/ui.h"
 
 
-void setUp() {
+// void setUp() {
 
-}
+// }
 
-void tearDown() {
+// void tearDown() {
 
-}
+// }
 
 void test_create_client(void) {
   client_t *client;
@@ -378,18 +378,18 @@ void test_free_history(void) {
 }
 
 
-int main(void) {
-  printf("test-client.c\n");
-  UNITY_BEGIN();
-  RUN_TEST(test_create_client);
-  RUN_TEST(test_append_client);
-  RUN_TEST(test_add_client);
-  RUN_TEST(test_set_active_client);
-  RUN_TEST(test_set_client_username);
-  RUN_TEST(test_remove_client);
-  RUN_TEST(test_print_clients);
-  RUN_TEST(test_disconnect_client);
-  RUN_TEST(test_free_clients);
-  RUN_TEST(test_free_history);
-  return UNITY_END();
-}
+// int main(void) {
+//   printf("test-client.c\n");
+//   UNITY_BEGIN();
+//   RUN_TEST(test_create_client);
+//   RUN_TEST(test_append_client);
+//   RUN_TEST(test_add_client);
+//   RUN_TEST(test_set_active_client);
+//   RUN_TEST(test_set_client_username);
+//   RUN_TEST(test_remove_client);
+//   RUN_TEST(test_print_clients);
+//   RUN_TEST(test_disconnect_client);
+//   RUN_TEST(test_free_clients);
+//   RUN_TEST(test_free_history);
+//   return UNITY_END();
+// }

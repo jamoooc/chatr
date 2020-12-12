@@ -12,13 +12,13 @@
 // gcc ../test/test-message.c ../src/utils.c ../src/client.c ../src/message.c ../src/pfds.c ../src/connect.c ../src/ui.c ../unity/unity.c -lncurses
 
 
-void setUp() {
-  /* run before each test */
-}
+// void setUp() {
+//   /* run before each test */
+// }
 
-void tearDown() {
-  /* run after each test */
-}
+// void tearDown() {
+//   /* run after each test */
+// }
 
 
 
@@ -274,14 +274,14 @@ void test_free_messages(void) {
   TEST_ASSERT_NULL(head);
 }
 
-int main(void) {
-  printf("test-message.c\n");
-  UNITY_BEGIN();
-  RUN_TEST(test_insert_history);
-  RUN_TEST(test_print_history);
-  RUN_TEST(test_create_message);
-  RUN_TEST(test_append_message);
-  RUN_TEST(test_remove_message);
-  RUN_TEST(test_free_messages);
-  return UNITY_END();
-}
+// int main(void) {
+//   printf("test-message.c\n");
+//   UNITY_BEGIN();
+//   RUN_TEST(test_insert_history);
+//   RUN_TEST(test_print_history);
+//   RUN_TEST(test_create_message);
+//   RUN_TEST(test_append_message);
+//   RUN_TEST(test_remove_message);
+//   RUN_TEST(test_free_messages);
+//   return UNITY_END();
+// }

@@ -10,3 +10,4 @@ logfile.txt
 *.dSYM/
 *.out
 logfile.txt
+*.txt

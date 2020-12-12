@@ -7,25 +7,61 @@
 #include "../src/pfds.h"
 #include "../src/ui.h"
 
-// gcc ../src/pfds.c test-something.c ../unity/unity.c -o test
-// gcc ../test/test-something.c ../src/utils.c ../src/main.c ../src/main.h ../src/connect.c ../src/client.c ../src/message.c ../src/pfds.c ../src/ui.c ../unity/unity.c -lncurses
+// void setUp() {
+//   /* run before each test */
+// }
 
-// this works MAKEFILE!
-// gcc ../test/test-something.c ../src/utils.c ../src/client.c ../src/message.c ../src/pfds.c ../src/connect.c ../unity/unity.c -lncurses
+// void tearDown() {
+//   /* run after each test */
+// }
 
-
-void setUp() {
-  /* run before each test */
-}
-
-void tearDown() {
-  /* run after each test */
-}
-
-void test_process_input(void) {
+void test_get_input(void) {
   TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
 }
 
+void test_process_input(void) {
+  // create args
+  WINDOW **windows = create_windows_array(N_WINDOWS);
+  memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
+  // create clients
+  client_t *client = create_client(4, "user1");
+
+  args_t *args = malloc(sizeof(args));
+  client_t *client_list = NULL;
+  args->client_list = &client_list;
+  args->quit = 1;   // TODO switch 1 for 0!
+  args->active_client = NULL;
+
+  // if input /quit, exit
+  char *exit = "/quit";
+  process_input(exit, args, windows);
+  TEST_ASSERT_EQUAL_INT(0, args->quit); // will be reversed
+
+
+/// NEEED TO DO SOME ARGSBLAHBLAH
+
+// WORKING HERE
+// WORKING HERE
+// WORKING HERE
+// WORKING HERE
+// WORKING HERE
+// WORKING HERE
+  // sets active client
+  char *set_active = "@user1";
+  process_input(set_active, args, windows);
+  TEST_ASSERT_EQUAL_INT("user1", args->active_client->username);
+  
+
+  // sets host username
+  // adds new client
+  // adds message to queue
+
+  // TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
+}
+
+
+
+// SEG AGAIN
 void test_set_host_username(void) {
   char *input = "username";
   args_t *args = malloc(sizeof(args_t));
@@ -257,15 +293,15 @@ void test_handle_error() {
   TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
 }
 
-int main(void) {
-  printf("unity\n");
-  UNITY_BEGIN();
-  RUN_TEST(test_process_input);
-  RUN_TEST(test_set_host_username);
-  RUN_TEST(test_valid_port);
-  RUN_TEST(test_valid_username);
-  RUN_TEST(test_remove_first_char);
-  RUN_TEST(test_remove_newline);
-  RUN_TEST(test_remove_trailing_whitespace);
-  return UNITY_END();
-}
+// int main(void) {
+//   printf("unity\n");
+//   UNITY_BEGIN();
+//   RUN_TEST(test_process_input);
+//   RUN_TEST(test_set_host_username);
+//   RUN_TEST(test_valid_port);
+//   RUN_TEST(test_valid_username);
+//   RUN_TEST(test_remove_first_char);
+//   RUN_TEST(test_remove_newline);
+//   RUN_TEST(test_remove_trailing_whitespace);
+//   return UNITY_END();
+// }
