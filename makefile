@@ -27,7 +27,7 @@ TARGET = chatr
 TEST = build/tests.out
 TEST_RUNNER = test/test-runner.c
 
-COMPILE = gcc -c -g
+COMPILE = gcc -c
 LINK = gcc
 CFLAGS = -I $(PATHS)
 LIBS = -lncurses
@@ -49,10 +49,6 @@ $(TARGET): $(OBJECTS)
 $(PATHO)%.o:: $(PATHS)%.c
 	$(COMPILE) $(CFLAGS) $< -o $@
 
-# # create dependency files
-# $(PATHD)%.d:: $(PATHS)%.c
-# 	$(DEPEND) $@ $<
-
 .PHONY: test
 .PHONY: clean
 
@@ -62,9 +58,9 @@ IGNORE = `grep -s IGNORE $(PATHR)*.txt`
 RESULTS = $(PATHR)test-results.txt
 
 test: $(BUILD_PATHS) clean tests.out
-	@./$(TEST) > ./$(RESULTS)
 	@./$(TEST)
 
+# @./$(TEST) > ./$(RESULTS)
 # @echo "-----------------------\nIGNORES:\n-----------------------"
 # @echo "$(IGNORE)"
 # @echo "-----------------------\nFAILURES:\n-----------------------"

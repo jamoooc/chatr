@@ -1,20 +1,8 @@
 #include "../unity/unity.h"
-#include "../src/utils.h"
 #include "../src/client.h"
-#include "../src/connect.h"
-#include "../src/main.h"
-#include "../src/message.h"
 #include "../src/pfds.h"
 #include "../src/ui.h"
 
-
-// void setUp() {
-
-// }
-
-// void tearDown() {
-
-// }
 
 void test_create_client(void) {
   client_t *client;
@@ -158,7 +146,7 @@ void test_set_active_client(void) {
   TEST_ASSERT_EQUAL_STRING(valid, args->active_client->username);
   TEST_ASSERT_EQUAL_INT(rv, 0);
   
-  // free_clients(args->client_list);
+  free_clients(args->client_list);
   free(args);
   free(windows);
 }
@@ -214,14 +202,16 @@ void test_set_client_username(void) {
   rv = set_active_client(valid, args, windows);
   TEST_ASSERT_EQUAL_STRING(valid, args->active_client->username);
   TEST_ASSERT_EQUAL_INT(rv, 0);
+
+  free_clients(args->client_list);
+  free(args);
+  free(windows);
 }
 
 
 
 void test_disconnect_client(void) {
-  // TODO 
-  
-  TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
+  TEST_IGNORE_MESSAGE("This test was ignored on purpose.");
 }
 
 
@@ -313,8 +303,7 @@ void test_remove_client(void) {
 
 void test_print_clients(void)
 {
-  // https://stackoverflow.com/a/36304428/11350846
-  TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
+  TEST_IGNORE_MESSAGE("TThis test was ignored on purpose.");
 }
 
 
@@ -376,20 +365,3 @@ void test_free_history(void) {
   rv = free_history(head);
   TEST_ASSERT_EQUAL_INT(0, rv);
 }
-
-
-// int main(void) {
-//   printf("test-client.c\n");
-//   UNITY_BEGIN();
-//   RUN_TEST(test_create_client);
-//   RUN_TEST(test_append_client);
-//   RUN_TEST(test_add_client);
-//   RUN_TEST(test_set_active_client);
-//   RUN_TEST(test_set_client_username);
-//   RUN_TEST(test_remove_client);
-//   RUN_TEST(test_print_clients);
-//   RUN_TEST(test_disconnect_client);
-//   RUN_TEST(test_free_clients);
-//   RUN_TEST(test_free_history);
-//   return UNITY_END();
-// }

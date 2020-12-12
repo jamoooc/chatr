@@ -1,25 +1,5 @@
 #include "../unity/unity.h"
-#include "../src/utils.h"
-#include "../src/client.h"
-#include "../src/connect.h"
-#include "../src/main.h"
 #include "../src/message.h"
-#include "../src/pfds.h"
-#include "../src/ui.h"
-
-
-// this works for now MAKEFILE!
-// gcc ../test/test-message.c ../src/utils.c ../src/client.c ../src/message.c ../src/pfds.c ../src/connect.c ../src/ui.c ../unity/unity.c -lncurses
-
-
-// void setUp() {
-//   /* run before each test */
-// }
-
-// void tearDown() {
-//   /* run after each test */
-// }
-
 
 
 void test_insert_history(void) {

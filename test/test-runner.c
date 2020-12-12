@@ -4,6 +4,7 @@
 #include "test-pfds.c"
 #include "test-utils.c"
 #include "test-message.c"
+#include "test-connect.c"
 
 void setUp() {
 
@@ -37,8 +38,8 @@ int main(void) {
 
   printf("\nutils\n\n");
 
-  // RUN_TEST(test_process_input);
-  // RUN_TEST(test_set_host_username); // SEG!
+  RUN_TEST(test_process_input);
+  RUN_TEST(test_set_host_username);
   RUN_TEST(test_valid_port);
   RUN_TEST(test_valid_username);
   RUN_TEST(test_remove_first_char);
@@ -54,5 +55,12 @@ int main(void) {
   RUN_TEST(test_remove_message);
   RUN_TEST(test_free_messages);
 
+  printf("\nconnect\n\n");
+
+  RUN_TEST(test_accept_connection);
+  RUN_TEST(test_transmit_packet);
+  RUN_TEST(test_receive_packet);
+  RUN_TEST(test_init_server);
+  
   return UNITY_END();
 }

@@ -1,19 +1,6 @@
 #include "../unity/unity.h"
 #include "../src/utils.h"
-#include "../src/client.h"
-#include "../src/connect.h"
-#include "../src/main.h"
-#include "../src/message.h"
-#include "../src/pfds.h"
-#include "../src/ui.h"
 
-// void setUp() {
-//   /* run before each test */
-// }
-
-// void tearDown() {
-//   /* run after each test */
-// }
 
 void test_get_input(void) {
   TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
@@ -23,49 +10,73 @@ void test_process_input(void) {
   // create args
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
-  // create clients
-  client_t *client = create_client(4, "user1");
+
+  client_t *client_list = NULL;
+  msg_t *message_queue = NULL;
 
   args_t *args = malloc(sizeof(args));
-  client_t *client_list = NULL;
+  args->message_queue = &message_queue;
   args->client_list = &client_list;
-  args->quit = 1;   // TODO switch 1 for 0!
   args->active_client = NULL;
+  args->quit = 1;
+
+  // create clients
+  client_t *client1 = create_client(4, "user1");
+  client_t *client2 = create_client(5, "user2");
+
+  append_client(client1, args, windows);
+  append_client(client2, args, windows);
 
   // if input /quit, exit
   char *exit = "/quit";
   process_input(exit, args, windows);
-  TEST_ASSERT_EQUAL_INT(0, args->quit); // will be reversed
+  TEST_ASSERT_EQUAL_INT(0, args->quit);
 
-
-/// NEEED TO DO SOME ARGSBLAHBLAH
-
-// WORKING HERE
-// WORKING HERE
-// WORKING HERE
-// WORKING HERE
-// WORKING HERE
-// WORKING HERE
   // sets active client
-  char *set_active = "@user1";
+  char *set_active = malloc(sizeof(char) * USERNAME_LEN);
+  strcpy(set_active, "@user2");
+  char *expect_active = malloc(sizeof(char) * USERNAME_LEN);
+  strcpy(expect_active, "user2");
   process_input(set_active, args, windows);
-  TEST_ASSERT_EQUAL_INT("user1", args->active_client->username);
-  
+  TEST_ASSERT_EQUAL_STRING(expect_active, args->active_client->username);
+  free(set_active);
+  free(expect_active);
 
   // sets host username
-  // adds new client
-  // adds message to queue
+  char *set_host = malloc(sizeof(char) * 30);
+  strcpy(set_host, "$hostname");
+  char *expect_host = malloc(sizeof(char) * USERNAME_LEN);
+  strcpy(expect_host, "hostname");
+  process_input(set_host, args, windows);
+  TEST_ASSERT_EQUAL_STRING(set_host, args->host_username);
+  free(set_host);
+  free(expect_host);
 
-  // TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
+  // adds new client
+  // TODO
+
+  // adds message to queue
+  char *q_msg = malloc(sizeof(char) * BUFFER_LEN);
+  strcpy(q_msg, "this is a message");
+  char *expect_q_msg = malloc(sizeof(char) * BUFFER_LEN);
+  strcpy(expect_q_msg, "this is a message");
+  process_input(q_msg, args, windows);
+  msg_t *msg = *args->message_queue;
+  TEST_ASSERT_EQUAL_STRING(expect_q_msg, msg->packet->body);
+  TEST_ASSERT_EQUAL_STRING(args->active_client->username, msg->client->username);
+  TEST_ASSERT_EQUAL_STRING(args->host_username, msg->packet->username);
+  free(q_msg);
+  free(expect_q_msg);
 }
 
 
 
-// SEG AGAIN
 void test_set_host_username(void) {
   char *input = "username";
   args_t *args = malloc(sizeof(args_t));
   WINDOW **windows = create_windows_array(N_WINDOWS);
+  memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
+
   set_host_username(input, args, windows);
 
   TEST_ASSERT_EQUAL_STRING(input, args->host_username);
@@ -292,16 +303,3 @@ void test_remove_trailing_whitespace(void) {
 void test_handle_error() {
   TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
 }
-
-// int main(void) {
-//   printf("unity\n");
-//   UNITY_BEGIN();
-//   RUN_TEST(test_process_input);
-//   RUN_TEST(test_set_host_username);
-//   RUN_TEST(test_valid_port);
-//   RUN_TEST(test_valid_username);
-//   RUN_TEST(test_remove_first_char);
-//   RUN_TEST(test_remove_newline);
-//   RUN_TEST(test_remove_trailing_whitespace);
-//   return UNITY_END();
-// }
