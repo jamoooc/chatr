@@ -11,3 +11,4 @@ logfile.txt
 logfile.txt
 *.txt
 *.h.gch
+.vscode

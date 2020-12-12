@@ -14,7 +14,7 @@ Select the active client with:  `@clientname`.
 Connect to a new client with:   `!IP PORT`.
 Exit with:                      `/quit`.
 
-## program structure
+## structure
 
 ```
 get_opt
