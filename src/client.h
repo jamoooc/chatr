@@ -2,7 +2,8 @@
 #define CLIENT_H
 
 #include "main.h"
-#include "ctype.h"
+#include "ui.h"
+#include "connect.h"
 
 #define SET_CLIENT "Select a client with '@username' before editing a username."
 

@@ -1,12 +1,6 @@
-#include "ctype.h"
-
 #include "utils.h"
-#include "message.h"
-#include "client.h"
-
 
 /* process_input */
-
 
 void get_input(args_t *args, WINDOW **windows) {
   char input_buffer[BUFFER_LEN];

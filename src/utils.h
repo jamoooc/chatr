@@ -4,8 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "main.h"
+#include "client.h"
+#include "ui.h"
 
 #define EXIT_MESSAGE "Goodbye!"
 
@@ -16,9 +19,6 @@ bool valid_username(char *username);
 void remove_first_char(char *input);
 // description
 int remove_newline(char *input);
-// description
-void assist(char *input, args_t *args, WINDOW **windows); // maybe not in here
-// rename assist/delete
 // description
 int set_host_username(char *input, args_t *args, WINDOW **windows);
 // description

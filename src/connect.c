@@ -1,11 +1,6 @@
 #include "connect.h"
-#include "utils.h"
-#include "client.h"
-#include "pfds.h"
-
 
 /* transmit_packet */
-
 
 void transmit_packet(msg_t *message, args_t *args, WINDOW **windows) {
   // check socket is valid and send packet

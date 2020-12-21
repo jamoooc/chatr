@@ -2,6 +2,7 @@
 #define NCURSES_H
 
 #include <ncurses.h>
+
 #include "main.h"
 
 #define LEFT 0.30 * COLS
@@ -35,7 +36,6 @@ typedef struct win_dim {
   int startx;
 } dim_t;
 
-// error values?!?!?!
 void welcome_screen(void);
 void exit_screen(void);
 void print_usage(WINDOW *win);

@@ -1,7 +1,6 @@
 #include "../unity/unity.h"
 #include "../src/utils.h"
 
-
 void test_get_input(void) {
   TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
 }

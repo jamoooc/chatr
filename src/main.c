@@ -6,26 +6,21 @@
 #include "pfds.h"
 #include "ui.h"
 
+static void usage(char *progname, int opt);
 
 /* main */
 
-
 int main(int argc, char *argv[]) {
-  options_t options = { 0, 0 };
-  int opt = 0; // to hold argv char, set to -1 at argv EOF
+  options_t options = { 0 };
+  int opt = 0; // holds option flag, set to -1 at end of argv
   opterr = 0;
-
-  // minimum args
-  if (argc < 3) {
-    usage(argv[0], opt);
-    exit(EXIT_FAILURE);
-  }
 
   // step through argv 
   while ((opt = getopt(argc, argv, OPTSTR)) != EOF) {
     switch (opt) {
       case 'p':
         if ((valid_port(optarg)) == false) {
+          printf("%s.\n", INVALID_PORT);
           usage(basename(argv[0]), opt);
           exit(EXIT_FAILURE);
         } else {
@@ -39,8 +34,14 @@ int main(int argc, char *argv[]) {
       case 'h':
       default:
         usage(basename(argv[0]), opt);
+        exit(EXIT_FAILURE);
         break;
     }
+  }
+
+  if (argc < 3) {
+    usage(argv[0], opt);
+    exit(EXIT_FAILURE);
   }
 
   // linked lists
@@ -78,7 +79,6 @@ int main(int argc, char *argv[]) {
   insert_pfd(&args->pfds, STDIN_FILENO, &fd_count, &nfds);
   insert_pfd(&args->pfds, server_socket, &fd_count, &nfds);
 
-  // this needs its own func
   while (args->quit) {
     // move cursor to input window
     wmove(windows[INPUT], 0, 0);
@@ -141,7 +141,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // free everything
   free(args->pfds);
   free_clients(args->client_list);
   free_messages(args->message_queue);
@@ -165,5 +164,4 @@ void usage(char *progname, int opt) {
     fprintf(stderr, "Missing arguement for option '-%c'.\n", optopt);
   }
   fprintf(stderr, USAGE_FMT, progname ? progname : DEFAULT_PROGNAME);
-  exit(EXIT_FAILURE);
 }

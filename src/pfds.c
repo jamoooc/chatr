@@ -1,11 +1,6 @@
 #include "pfds.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-
-
 /* create_pfds_array */
-
 
 struct pollfd *create_pfds_array(nfds_t nfds) {
  struct pollfd *pfds = malloc(sizeof(*pfds) * nfds);
@@ -14,7 +9,6 @@ struct pollfd *create_pfds_array(nfds_t nfds) {
     exit(EXIT_FAILURE);
   }
 
-  // init values
   for (int i = 0; i < nfds; i++) {
     pfds[i].fd = -1;
     pfds[i].events = 0;
@@ -23,9 +17,7 @@ struct pollfd *create_pfds_array(nfds_t nfds) {
   return pfds;
 }
 
-
 /* insert_pfd */
-
 
 void insert_pfd(struct pollfd *pfds[], int new_fd, nfds_t *fd_count, nfds_t *nfds) {
   // resize poll_fd array if necessary
@@ -46,9 +38,7 @@ void insert_pfd(struct pollfd *pfds[], int new_fd, nfds_t *fd_count, nfds_t *nfd
   (*fd_count)++;
 }
 
-
 /* remove pfd */
-
 
 void remove_pfd(struct pollfd pfds[], int i, nfds_t *fd_count) {
   // copy last pfd over el to remove

@@ -2,6 +2,8 @@
 #define PFDS_H
 
 #include <poll.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 void insert_pfd(struct pollfd *pfds[], int new_fd, nfds_t *nfds, nfds_t *fd_count);
 // description

@@ -1,41 +1,43 @@
 #ifndef MAIN_H
-  #define MAIN_H
+#define MAIN_H
 
-// move includes to correct headers
-
-#include <ncurses.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <assert.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <arpa/inet.h>
-#include <poll.h>
-#include <netdb.h>
-#include <libgen.h>
-#include <errno.h>
-#include <getopt.h>
+#include <stdlib.h>         // malloc, free, exit,
+#include <string.h>         // strlen
+#include <fcntl.h>          // fcntl
+#include <arpa/inet.h>      // inet_pton, inet_ntop
+#include <poll.h>           // nfds_t
+#include <libgen.h>         // basename
+#include <errno.h>          // errno
+#include <getopt.h>         // getopt
 
+
+// #include "client.h"
+// #include "connect.h"
+// #include "message.h"
+// #include "pfds.h"
+// #include "ui.h"
+// #include "utils.h"
+
+// #include <ncurses.h>
+// #include <sys/socket.h>
+// #include <sys/types.h>
+// #include <unistd.h>         
+// #include <netinet/in.h>
+// #include <assert.h>
+// #include <ctype.h>
+// #include <netdb.h>          
 
 /* integer constants */
-
 
 #define BACKLOG           10
 #define USERNAME_LEN      30
 #define BUFFER_LEN        256
 #define MIN_CLIENT_SOCK   2
 #define N_WINDOWS         6
-#define N_PFDS            3 // initial val
-
+#define N_PFDS            3
 
 /* string constants */
-
 
 #define OPTSTR            ":p:hv" // template string for getopt
 #define USAGE_FMT         "%s [-p localport 0-65535] [-h help] [-v version]\n"
@@ -44,16 +46,13 @@
 #define INVALID_PORT      "Invalid port: 0 - 65535"
 #define INVALID_IPV4_ADDR "Invalid IPv4 address"
 #define INVALID_USERNAME  "Username can only contain alphanumeric characters"
-#define ACTIVE_CLIENT_SET "Active client set to"
+#define ACTIVE_CLIENT_SET "Active client is"
 #define UNKNOWN_CLIENT    "Unknown client"
 
-extern int errno;           // used by std C lib for error communication
-extern char *optarg;        // ptr to option argument
-extern int opterr, optind;  // used by getopt()
+extern char *optarg;                // ptr to option argument
+extern int opterr, optind, optopt;  // used by getopt()
 
-
-/* windows enum */
-
+/* windows */
 
 enum WIN_INDEX {
   CLIENTS,
@@ -71,7 +70,7 @@ enum WIN_INDEX {
 /* options_t */
 
 typedef struct options {
-  int                 verbose;
+  // int                 verbose;
   unsigned int        port;
 } options_t;
 
@@ -131,11 +130,5 @@ typedef struct pollfds {
   nfds_t              *nfds;
   nfds_t              *fd_count;
 } pollfds_t;
-
-
-/* prototypes */
-
-// print usage to command line
-void usage(char *progname, int opt);
 
 #endif /* MAIN_H */

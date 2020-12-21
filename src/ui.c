@@ -1,9 +1,6 @@
 #include "ui.h"
-#include "utils.h"
-
 
 /* init_curses */
-
 
 void init_curses(WINDOW **windows) {
   initscr();
@@ -12,9 +9,7 @@ void init_curses(WINDOW **windows) {
   print_usage(windows[USAGE]);
 }
 
-
 /* welcome_screen */
-
 
 void welcome_screen(void) {
   dim_t *welcome_dim = init_dim(LINES, COLS, 0, 0);
@@ -39,9 +34,7 @@ void welcome_screen(void) {
   delwin(welcome_win);
 }
 
-
 /* create_windows_array */
-
 
 void exit_screen(void) {
   dim_t *exit_dim = init_dim(0, 0, 0, 0);
@@ -59,9 +52,7 @@ void exit_screen(void) {
   delwin(exit_win);
 }
 
-
 /* create_windows_array */
-
 
 WINDOW **create_windows_array(int n) {
   WINDOW **window_array = malloc(sizeof(WINDOW *) * n);
@@ -72,9 +63,7 @@ WINDOW **create_windows_array(int n) {
   return window_array;
 }
 
-
 /* create_window */
-
 
 WINDOW *create_window(dim_t *dim, int box) {
   WINDOW *new_win = newwin(dim->height, dim->width, dim->starty, dim->startx);
@@ -90,9 +79,7 @@ WINDOW *create_window(dim_t *dim, int box) {
   return new_win;
 }
 
-
 /* init_dimensions */
-
 
 dim_t *init_dim(int h, int w, int y, int x) {
   dim_t *dim = malloc(sizeof(dim_t)); // ptr free'd in create_window
@@ -107,9 +94,7 @@ dim_t *init_dim(int h, int w, int y, int x) {
   return dim;
 }
 
-
 /* init_ui */
-
 
 void init_ui(WINDOW **windows) {
   dim_t *clients, *history, *info, *input, *usage, *input_border;
@@ -139,9 +124,7 @@ void init_ui(WINDOW **windows) {
   keypad(windows[4], TRUE); // enable function keys in input box
 }
 
-
-/* print_usage renmae command list or someting */
-
+/* print_usage */
 
 void print_usage(WINDOW *win) {
   mvwprintw(win, 1, 2, "$hostname");
@@ -152,9 +135,7 @@ void print_usage(WINDOW *win) {
   wrefresh(win);
 };
 
-
 /* free_windows_array */
-
 
 void free_windows(WINDOW **window) {
   for (int i = 0; i < N_WINDOWS; i++) {

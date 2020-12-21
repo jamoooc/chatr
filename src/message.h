@@ -2,6 +2,10 @@
 #define MESSAGE_H
 
 #include "main.h"
+#include "ui.h"
+#include "utils.h"
+
+/* prototypes */
 
 void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **windows);
 int print_history(client_t *client, args_t *args, WINDOW **windows);

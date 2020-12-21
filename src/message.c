@@ -1,11 +1,6 @@
 #include "message.h"
-#include "utils.h"
-#include "ui.h"
-#include "client.h"
-
 
 /* insert_history */
-
 
 void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **windows) {
   // create new history item
@@ -34,7 +29,6 @@ void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **w
 }
 
 /* print_history */
-
 
 int print_history(client_t *client, args_t *args, WINDOW **windows) {
   if (client->history == NULL) {
@@ -69,9 +63,7 @@ int print_history(client_t *client, args_t *args, WINDOW **windows) {
   return 0;
 }
 
-
 /* create_message */
-
 
 msg_t *create_message(char *message_body, args_t *args, WINDOW **windows) {
   // create packet for message struct
@@ -99,9 +91,7 @@ msg_t *create_message(char *message_body, args_t *args, WINDOW **windows) {
   return message;
 }
 
-
 /* append_message */
-
 
 void append_message(msg_t *new_message, msg_t **message_queue, WINDOW **windows) {
   msg_t **msg = message_queue;
@@ -112,9 +102,7 @@ void append_message(msg_t *new_message, msg_t **message_queue, WINDOW **windows)
   *msg = new_message;
 }
 
-
 /* remove message from queue */
-
 
 void remove_message(msg_t *message, msg_t **message_queue, WINDOW **windows) {
   // TODO not super happy with this strcmp 
@@ -129,9 +117,7 @@ void remove_message(msg_t *message, msg_t **message_queue, WINDOW **windows) {
   }
 }
 
-
 /* free remaining messages in queue */
-
 
 int free_messages(msg_t **message_queue) {
   if (message_queue == NULL) {

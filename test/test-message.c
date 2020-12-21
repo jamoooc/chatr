@@ -1,7 +1,6 @@
 #include "../unity/unity.h"
 #include "../src/message.h"
 
-
 void test_insert_history(void) {
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);

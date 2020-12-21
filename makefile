@@ -27,17 +27,17 @@ TARGET = chatr
 TEST = build/tests.out
 TEST_RUNNER = test/test-runner.c
 
-COMPILE = gcc -c
+CC = gcc
 LINK = gcc
 CFLAGS = -I $(PATHS)
 LIBS = -lncurses
 
 DEPENDS = $(patsubst %,$(PATHS)%,$(wildcard $(PATHS)*.h))
 OBJECTS = $(patsubst $(PATHS)%.c,$(PATHO)%.o,$(wildcard $(PATHS)*.c))
-TESTC = utils.c message.c client.c connect.c pfds.c ui.c # no main
-TESTS = $(patsubst %,$(PATHS)%,$(TESTC))
-BUILD_PATHS = $(PATHB) $(PATHD) $(PATHO) $(PATHR) $(PATHRF)
+TESTC = utils.c message.c client.c connect.c pfds.c ui.c # no main # for TESTS
+TESTS = $(patsubst %,$(PATHS)%,$(TESTC)) # full path test source files
 
+BUILD_PATHS = $(PATHB) $(PATHD) $(PATHO) $(PATHR) $(PATHRF)
 
 default: $(TARGET) $(BUILD)
 
@@ -47,7 +47,7 @@ $(TARGET): $(OBJECTS)
 
 # compile individual object files
 $(PATHO)%.o:: $(PATHS)%.c
-	$(COMPILE) $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 .PHONY: test
 .PHONY: clean

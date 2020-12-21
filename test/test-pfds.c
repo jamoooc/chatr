@@ -1,12 +1,5 @@
 #include "../unity/unity.h"
-// #include "../src/utils.h"
-// #include "../src/client.h"
-// #include "../src/connect.h"
-// #include "../src/main.h"
-// #include "../src/message.h"
 #include "../src/pfds.h"
-// #include "../src/ui.h"
-
 
 void test_create_pfds_array(void) {
   nfds_t nfds = N_PFDS;

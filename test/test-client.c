@@ -1,8 +1,5 @@
 #include "../unity/unity.h"
 #include "../src/client.h"
-#include "../src/pfds.h"
-#include "../src/ui.h"
-
 
 void test_create_client(void) {
   client_t *client;
@@ -20,9 +17,9 @@ void test_append_client(void) {
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
-  args_t *args = malloc(sizeof(args_t));
-
   client_t *client_list = NULL;
+
+  args_t *args = malloc(sizeof(args_t));
   args->client_list = &client_list;
   args->active_client = NULL;
   
@@ -100,10 +97,8 @@ void test_set_active_client(void) {
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS); 
 
-  args_t *args = malloc(sizeof(args_t));
   client_t *client_list = NULL;
   msg_t *message_queue = NULL;
-
   nfds_t nfds = N_PFDS;
   nfds_t fd_count = 0;
 
@@ -112,6 +107,7 @@ void test_set_active_client(void) {
   char *user1 = "user1";
   char *user2 = "user2";
 
+  args_t *args = malloc(sizeof(args_t));
   args->pfds = pfds;
   args->client_list = &client_list;
   args->active_client = NULL;
@@ -218,7 +214,7 @@ void test_disconnect_client(void) {
 
 void test_remove_client(void) {
   client_t *head = NULL;
-  int a, b, c, d, e, f, g, h, i; // counters
+  int a, b, c, d, e, f, g, h, i; // counters (could just reuse a couple...)
   a = b = c = d = e = f = g = h = i = 0;
   int rv = 0;
 
@@ -324,7 +320,7 @@ void test_free_clients(void) {
     while (*tmp != NULL) {
       tmp = &(*tmp)->next;
     }
-    new->next = *tmp; // tmp is null in empty list
+    new->next = *tmp;
     *tmp = new;
     i++;
   }
