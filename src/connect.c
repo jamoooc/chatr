@@ -1,8 +1,8 @@
 #include "connect.h"
 
-/* transmit_packet */
+/* packet_transmit */
 
-void transmit_packet(msg_t *message, args_t *args, WINDOW **windows) {
+void packet_transmit(msg_t *message, args_t *args, WINDOW **windows) {
   // check socket is valid and send packet
   int send_bytes;
   if ((send_bytes = send(message->client->socket, message->packet, sizeof(packet_t), 0)) == -1) {
@@ -13,27 +13,27 @@ void transmit_packet(msg_t *message, args_t *args, WINDOW **windows) {
   // store packet before message free'd
   packet_t *packet = malloc(sizeof(packet_t));
   if (packet == NULL) {
-    perror("malloc receive_packet");
+    perror("malloc packet_receive");
     exit(EXIT_FAILURE);
   }
   *packet = *message->packet;
 
   // add to history and remove message from queue
-  insert_history(message->packet, message->client, args, windows);
-  remove_message(message, args->message_queue, windows);
+  history_insert(message->packet, message->client, args, windows);
+  message_destroy(message, args->message_queue, windows);
 }
 
 
-/* receive_packet */
+/* packet_receive */
 
 
-void receive_packet(int pfd_index, args_t *args, WINDOW **windows) {
+void packet_receive(int pfd_index, args_t *args, WINDOW **windows) {
   int recv_bytes = 0;
   int recv_flags = 0;
 
   packet_t *packet = malloc(sizeof(packet_t));
   if (packet == NULL) {
-    perror("malloc receive_packet");
+    perror("malloc packet_receive");
     exit(EXIT_FAILURE);
   }
 
@@ -47,13 +47,13 @@ void receive_packet(int pfd_index, args_t *args, WINDOW **windows) {
     while (client->socket != args->pfds[pfd_index].fd) {
       client = client->next;
     }
-    insert_history(packet, client, args, windows);
+    history_insert(packet, client, args, windows);
   } else {
     // catch disconnects missed by pollhup
     if (recv_bytes < 0) {
       perror("recv");
     }
-    disconnect_client(pfd_index, args, windows);
+    client_disconnect(pfd_index, args, windows);
   }
 }
 
@@ -138,9 +138,9 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   snprintf(username, 8, "user%i", client_socket);
 
   // add to client list and pfds
-  client_t *client = create_client(client_socket, username);
-  append_client(client, args, windows);
-  insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
+  client_t *client = client_create(client_socket, username);
+  client_append(client, args, windows);
+  pfd_insert(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if only client, set to active user
   if (args->active_client == NULL) {

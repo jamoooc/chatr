@@ -1,8 +1,8 @@
 #include "pfds.h"
 
-/* create_pfds_array */
+/* pfd_create_array */
 
-struct pollfd *create_pfds_array(nfds_t nfds) {
+struct pollfd *pfd_create_array(nfds_t nfds) {
  struct pollfd *pfds = malloc(sizeof(*pfds) * nfds);
   if (pfds == NULL) {
     perror("pfds");
@@ -17,9 +17,9 @@ struct pollfd *create_pfds_array(nfds_t nfds) {
   return pfds;
 }
 
-/* insert_pfd */
+/* pfd_insert */
 
-void insert_pfd(struct pollfd *pfds[], int new_fd, nfds_t *fd_count, nfds_t *nfds) {
+void pfd_insert(struct pollfd *pfds[], int new_fd, nfds_t *fd_count, nfds_t *nfds) {
   // resize poll_fd array if necessary
   if (*fd_count == *nfds) {
     *nfds *= 2;
@@ -40,7 +40,7 @@ void insert_pfd(struct pollfd *pfds[], int new_fd, nfds_t *fd_count, nfds_t *nfd
 
 /* remove pfd */
 
-void remove_pfd(struct pollfd pfds[], int i, nfds_t *fd_count) {
+void pfd_destroy(struct pollfd pfds[], int i, nfds_t *fd_count) {
   // copy last pfd over el to remove
   pfds[i] = pfds[*fd_count - 1];
 

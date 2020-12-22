@@ -1,11 +1,11 @@
 #include "../unity/unity.h"
 #include "../src/connect.h"
 
-void test_transmit_packet(void) {
+void test_packet_transmit(void) {
   TEST_IGNORE_MESSAGE("This test was ignored on purpose.");
 }
 
-void test_receive_packet(void) {
+void test_packet_receive(void) {
   TEST_IGNORE_MESSAGE("This test was ignored on purpose.");
 }
 

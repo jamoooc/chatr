@@ -5,12 +5,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void insert_pfd(struct pollfd *pfds[], int new_fd, nfds_t *nfds, nfds_t *fd_count);
+void pfd_insert(struct pollfd *pfds[], int new_fd, nfds_t *nfds, nfds_t *fd_count);
 // description
-void remove_pfd(struct pollfd pfds[], int i, nfds_t *fd_count);
+void pfd_destroy(struct pollfd pfds[], int i, nfds_t *fd_count);
 // description
-struct pollfd *create_pfds_array(nfds_t nfds);
+void pfd_free(struct pollfd *pfds[], nfds_t *nfds);
 // description
-void free_pfds(struct pollfd *pfds[], nfds_t *nfds);
+struct pollfd *pfd_create_array(nfds_t nfds);
+// description
 
 #endif

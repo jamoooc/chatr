@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
   // poll
   nfds_t nfds = N_PFDS;
   nfds_t fd_count = 0;
-  struct pollfd *pfds = create_pfds_array(nfds); 
+  struct pollfd *pfds = pfd_create_array(nfds); 
   
   // ncurses
   WINDOW **windows = create_windows_array(N_WINDOWS);
@@ -76,8 +76,8 @@ int main(int argc, char *argv[]) {
   set_nonblock(server_socket);
 
   // add stdin and server socket to pfds
-  insert_pfd(&args->pfds, STDIN_FILENO, &fd_count, &nfds);
-  insert_pfd(&args->pfds, server_socket, &fd_count, &nfds);
+  pfd_insert(&args->pfds, STDIN_FILENO, &fd_count, &nfds);
+  pfd_insert(&args->pfds, server_socket, &fd_count, &nfds);
 
   while (args->quit) {
     // move cursor to input window
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     // server socket for client connection
     if (args->pfds[1].revents & POLLIN) {
       accept_connection(args->pfds[1].fd, args, windows);
-      print_clients(args->active_client, args->client_list, windows);
+      client_print(args->active_client, args->client_list, windows);
     }
 
     // client fds
@@ -118,14 +118,14 @@ int main(int argc, char *argv[]) {
 
       // check for client hangup 
       if (args->pfds[i].revents & POLLHUP) {
-        disconnect_client(i, args, windows);
+        client_disconnect(i, args, windows);
         i++;
         continue;
       }
 
       // socket ready to recieve
       if (args->pfds[i].revents & POLLIN) {
-        receive_packet(i, args, windows);
+        packet_receive(i, args, windows);
       }
 
       // if message in queue & socket ready, send any msg for that socket
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
         msg_t *message = *args->message_queue;
         while (message != NULL) {
           if (message->client->socket == args->pfds[i].fd) {
-            transmit_packet(message, args, windows);
+            packet_transmit(message, args, windows);
           }
           message = message->next;
         }
@@ -142,8 +142,8 @@ int main(int argc, char *argv[]) {
   }
 
   free(args->pfds);
-  free_clients(args->client_list);
-  free_messages(args->message_queue);
+  client_free(args->client_list);
+  message_free(args->message_queue);
   free_windows(windows); // individuals windows
   free(windows); // windows array
   exit_screen();

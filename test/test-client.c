@@ -1,9 +1,9 @@
 #include "../unity/unity.h"
 #include "../src/client.h"
 
-void test_create_client(void) {
+void test_client_create(void) {
   client_t *client;
-  client = create_client(5, "test");
+  client = client_create(5, "test");
 
   TEST_ASSERT_NOT_NULL(client);
   TEST_ASSERT_EQUAL_INT(5, client->socket);
@@ -13,7 +13,7 @@ void test_create_client(void) {
   free(client);
 }
 
-void test_append_client(void) {
+void test_client_append(void) {
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
@@ -23,11 +23,11 @@ void test_append_client(void) {
   args->client_list = &client_list;
   args->active_client = NULL;
   
-  client_t *client1 = create_client(5, "one");
-  client_t *client2 = create_client(6, "two");
+  client_t *client1 = client_create(5, "one");
+  client_t *client2 = client_create(6, "two");
 
-  append_client(client1, args, windows);
-  append_client(client2, args, windows);
+  client_append(client1, args, windows);
+  client_append(client2, args, windows);
 
   TEST_ASSERT_NOT_NULL(client_list);
   TEST_ASSERT_EQUAL_INT(5, client_list->socket);
@@ -42,13 +42,13 @@ void test_append_client(void) {
   TEST_ASSERT_EQUAL_STRING("two", client_list->username);
 
   free(windows);
-  free_clients(args->client_list);
+  client_free(args->client_list);
   free(args);
 }
 
 
 
-void test_add_client(void) {
+void test_client_connect(void) {
  /* 
   *  err codes 
   *  0 = OK
@@ -77,15 +77,15 @@ void test_add_client(void) {
   char *random_sep =      "127.0.0.1/ 9999";
   char *invalid_ip =      "127.0.0.256 65535";
 
-  TEST_ASSERT_EQUAL_INT(2, add_client(missing_port, args, windows));
-  TEST_ASSERT_EQUAL_INT(2, add_client(missing_space, args, windows));
-  TEST_ASSERT_EQUAL_INT(2, add_client(missing_ip, args, windows));
-  // TEST_ASSERT_EQUAL_INT(0, add_client(double_space, args, windows)); // TODO mock?
-  TEST_ASSERT_EQUAL_INT(2, add_client(slash_sep, args, windows));
-  TEST_ASSERT_EQUAL_INT(2, add_client(colon_sep, args, windows));
-  TEST_ASSERT_EQUAL_INT(3, add_client(port_exceeded, args, windows));
-  TEST_ASSERT_EQUAL_INT(4, add_client(random_sep, args, windows));
-  TEST_ASSERT_EQUAL_INT(4, add_client(invalid_ip, args, windows));
+  TEST_ASSERT_EQUAL_INT(2, client_connect(missing_port, args, windows));
+  TEST_ASSERT_EQUAL_INT(2, client_connect(missing_space, args, windows));
+  TEST_ASSERT_EQUAL_INT(2, client_connect(missing_ip, args, windows));
+  // TEST_ASSERT_EQUAL_INT(0, client_connect(double_space, args, windows)); // TODO mock?
+  TEST_ASSERT_EQUAL_INT(2, client_connect(slash_sep, args, windows));
+  TEST_ASSERT_EQUAL_INT(2, client_connect(colon_sep, args, windows));
+  TEST_ASSERT_EQUAL_INT(3, client_connect(port_exceeded, args, windows));
+  TEST_ASSERT_EQUAL_INT(4, client_connect(random_sep, args, windows));
+  TEST_ASSERT_EQUAL_INT(4, client_connect(invalid_ip, args, windows));
 
   free(windows);
   free(args);
@@ -102,7 +102,7 @@ void test_set_active_client(void) {
   nfds_t nfds = N_PFDS;
   nfds_t fd_count = 0;
 
-  struct pollfd *pfds = create_pfds_array(nfds); 
+  struct pollfd *pfds = pfd_create_array(nfds); 
 
   char *user1 = "user1";
   char *user2 = "user2";
@@ -112,10 +112,10 @@ void test_set_active_client(void) {
   args->client_list = &client_list;
   args->active_client = NULL;
 
-  client_t *client = create_client(4, user1);
-  client_t *client1 = create_client(5, user2);
-  append_client(client, args, windows);
-  append_client(client1, args, windows);
+  client_t *client = client_create(4, user1);
+  client_t *client1 = client_create(5, user2);
+  client_append(client, args, windows);
+  client_append(client1, args, windows);
 
   int rv = 0;
 
@@ -142,7 +142,7 @@ void test_set_active_client(void) {
   TEST_ASSERT_EQUAL_STRING(valid, args->active_client->username);
   TEST_ASSERT_EQUAL_INT(rv, 0);
   
-  free_clients(args->client_list);
+  client_free(args->client_list);
   free(args);
   free(windows);
 }
@@ -162,10 +162,10 @@ void test_set_client_username(void) {
   char *user1 = "user1";
   char *user2 = "user2";
 
-  client_t *client1 = create_client(4, user1);
-  client_t *client2 = create_client(5, user2);
-  append_client(client1, args, windows);
-  append_client(client2, args, windows);
+  client_t *client1 = client_create(4, user1);
+  client_t *client2 = client_create(5, user2);
+  client_append(client1, args, windows);
+  client_append(client2, args, windows);
 
   int rv = 0;
 
@@ -199,20 +199,20 @@ void test_set_client_username(void) {
   TEST_ASSERT_EQUAL_STRING(valid, args->active_client->username);
   TEST_ASSERT_EQUAL_INT(rv, 0);
 
-  free_clients(args->client_list);
+  client_free(args->client_list);
   free(args);
   free(windows);
 }
 
 
 
-void test_disconnect_client(void) {
+void test_client_disconnect(void) {
   TEST_IGNORE_MESSAGE("This test was ignored on purpose.");
 }
 
 
 
-void test_remove_client(void) {
+void test_client_destroy(void) {
   client_t *head = NULL;
   int a, b, c, d, e, f, g, h, i; // counters (could just reuse a couple...)
   a = b = c = d = e = f = g = h = i = 0;
@@ -248,7 +248,7 @@ void test_remove_client(void) {
   }
 
   // will remove client from end - socks 0 1 2 3
-  rv = remove_client(4, &head);
+  rv = client_destroy(4, &head);
   int expect1[4] = { 0, 1, 2, 3 };
   client_t **second = &head;
   while (*second != NULL) {
@@ -259,7 +259,7 @@ void test_remove_client(void) {
   TEST_ASSERT_EQUAL_INT(0, rv);
 
   // will remove client form middle - socks 0 2 3
-  rv = remove_client(1, &head);
+  rv = client_destroy(1, &head);
   client_t **third = &head;
   int expect2[3] = { 0, 2, 3 };
   while (*third != NULL) {
@@ -270,7 +270,7 @@ void test_remove_client(void) {
   TEST_ASSERT_EQUAL_INT(0, rv);
 
   // will remove client form start - socks 2 3
-  rv = remove_client(0, &head);
+  rv = client_destroy(0, &head);
   client_t **fourth = &head;
   int expect3[2] = { 2, 3 };
   while (*fourth != NULL) {
@@ -281,7 +281,7 @@ void test_remove_client(void) {
   TEST_ASSERT_EQUAL_INT(0, rv);
   
   // returns err if client sock doesn't exist
-  // rv = remove_client(5, &head);
+  // rv = client_destroy(5, &head);
   // client_t **fifth = &head;
   // int expect4[2] = { 2, 3 };
   // while (*fifth != NULL) {
@@ -292,19 +292,19 @@ void test_remove_client(void) {
   // }
   // TEST_ASSERT_EQUAL_INT(1, rv);
 
-  free_clients(&head);
+  client_free(&head);
 }
 
 
 
-void test_print_clients(void)
+void test_client_print(void)
 {
   TEST_IGNORE_MESSAGE("TThis test was ignored on purpose.");
 }
 
 
 
-void test_free_clients(void) {
+void test_client_free(void) {
   client_t *head = NULL;
   int i = 0;
 
@@ -326,14 +326,14 @@ void test_free_clients(void) {
   }
 
   int rv = 0;
-  rv = free_clients(&head);
+  rv = client_free(&head);
   TEST_ASSERT_EQUAL_INT(0, rv);
   TEST_ASSERT_NULL(head);
 }
 
 
 
-void test_free_history(void) {
+void test_client_history_free(void) {
   history_t *head = NULL;
   int i = 0;
   while (i < 5) {
@@ -358,6 +358,6 @@ void test_free_history(void) {
   }
 
   int rv = 0;
-  rv = free_history(head);
+  rv = client_history_free(head);
   TEST_ASSERT_EQUAL_INT(0, rv);
 }

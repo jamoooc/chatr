@@ -1,7 +1,7 @@
 #include "../unity/unity.h"
 #include "../src/message.h"
 
-void test_insert_history(void) {
+void test_history_insert(void) {
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
   
@@ -22,9 +22,9 @@ void test_insert_history(void) {
   strcpy(packet2->body, "test2");
   strcpy(packet1->body, "test1");
 
-  insert_history(packet3, client, args, windows);
-  insert_history(packet2, client, args, windows);
-  insert_history(packet1, client, args, windows);
+  history_insert(packet3, client, args, windows);
+  history_insert(packet2, client, args, windows);
+  history_insert(packet1, client, args, windows);
 
   int i = 0;
   char *expect[3] = { "test1", "test2", "test3" };
@@ -40,7 +40,7 @@ void test_insert_history(void) {
 
 
 
-void test_print_history(void) {
+void test_history_print(void) {
   // if history NULL, return err val
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
@@ -50,7 +50,7 @@ void test_print_history(void) {
   client->history = NULL;
 
   int rv = 0;
-  rv = print_history(client, args, windows);
+  rv = history_print(client, args, windows);
   TEST_ASSERT_EQUAL_INT(1, rv);
 
   // TODO ncurses tests
@@ -62,7 +62,7 @@ void test_print_history(void) {
 
 
 
-void test_create_message(void) {
+void test_message_create(void) {
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
@@ -76,7 +76,7 @@ void test_create_message(void) {
   args->active_client = client;
 
   char *msg = "test message!";
-  msg_t *t_msg = create_message(msg, args, windows);
+  msg_t *t_msg = message_create(msg, args, windows);
 
   TEST_ASSERT_EQUAL_STRING(msg, t_msg->packet->body);
   TEST_ASSERT_EQUAL_STRING("user1", t_msg->client->username);
@@ -89,7 +89,7 @@ void test_create_message(void) {
 
 
 
-void test_append_message(void) {
+void test_message_append(void) {
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
@@ -103,8 +103,8 @@ void test_append_message(void) {
   while (i < 3) {
     snprintf(msg, sizeof(msg), "test%i", i);
     client_t *client = malloc(sizeof(client_t));
-    msg_t *new = create_message(msg, args, windows);
-    append_message(new, args->message_queue, windows);
+    msg_t *new = message_create(msg, args, windows);
+    message_append(new, args->message_queue, windows);
     i++;
   }
 
@@ -122,7 +122,7 @@ void test_append_message(void) {
 
 
 
-void test_remove_message(void) {
+void test_message_destroy(void) {
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
   
@@ -144,7 +144,7 @@ void test_remove_message(void) {
     client_t *client = malloc(sizeof(client_t));
     client->socket = i;
     snprintf(msg, sizeof(msg), "msg%i", i);
-    msg_t *new = create_message(msg, args, windows);
+    msg_t *new = message_create(msg, args, windows);
     
     msg_t **tmp = &head;
     while (*tmp != NULL) {
@@ -165,8 +165,8 @@ void test_remove_message(void) {
   }
 
   // remove last msg
-  msg_t *tmp1 = create_message("msg4", args, windows);
-  remove_message(tmp1, &head, windows);
+  msg_t *tmp1 = message_create("msg4", args, windows);
+  message_destroy(tmp1, &head, windows);
 
   char *expects1[4] = { "msg0", "msg1", "msg2", "msg3" };
   int last = 0; // track last entry
@@ -178,8 +178,8 @@ void test_remove_message(void) {
   }
 
   // // removes client from middle
-  msg_t *tmp2 = create_message("msg1", args, windows);
-  remove_message(tmp2, &head, windows);
+  msg_t *tmp2 = message_create("msg1", args, windows);
+  message_destroy(tmp2, &head, windows);
 
   msg_t **three = &head;
   char *expects2[3] = { "msg0", "msg2", "msg3" };
@@ -191,8 +191,8 @@ void test_remove_message(void) {
   }
 
   // // removes client from start
-  msg_t *tmp3 = create_message("msg0", args, windows);
-  remove_message(tmp3, &head, windows);
+  msg_t *tmp3 = message_create("msg0", args, windows);
+  message_destroy(tmp3, &head, windows);
 
   msg_t **four = &head;
   char *expects3[2] = { "msg2", "msg3" };
@@ -206,16 +206,16 @@ void test_remove_message(void) {
   free(tmp1);
   free(tmp2);
   free(tmp3);
-  free_messages(&head);
+  message_free(&head);
   free(args);
   free(windows);
 }
 
 
-/* test_free_messages */
+/* test_message_free */
 
 
-void test_free_messages(void) {
+void test_message_free(void) {
   msg_t *head = NULL;
   WINDOW **windows = create_windows_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
@@ -228,7 +228,7 @@ void test_free_messages(void) {
 
   while (i < 5) {
     snprintf(msg, 15, "test message%i", i);
-    msg_t *new = create_message(msg, args, windows);
+    msg_t *new = message_create(msg, args, windows);
     msg_t **tmp = &head;
     while (*tmp != NULL) {
       tmp = &(*tmp)->next;
@@ -248,7 +248,7 @@ void test_free_messages(void) {
     k++;
   }
 
-  rv = free_messages(&head);
+  rv = message_free(&head);
   TEST_ASSERT_EQUAL_INT(0, rv);
   TEST_ASSERT_NULL(head);
 }
@@ -256,11 +256,11 @@ void test_free_messages(void) {
 // int main(void) {
 //   printf("test-message.c\n");
 //   UNITY_BEGIN();
-//   RUN_TEST(test_insert_history);
-//   RUN_TEST(test_print_history);
-//   RUN_TEST(test_create_message);
-//   RUN_TEST(test_append_message);
-//   RUN_TEST(test_remove_message);
-//   RUN_TEST(test_free_messages);
+//   RUN_TEST(test_history_insert);
+//   RUN_TEST(test_history_print);
+//   RUN_TEST(test_message_create);
+//   RUN_TEST(test_message_append);
+//   RUN_TEST(test_message_destroy);
+//   RUN_TEST(test_message_free);
 //   return UNITY_END();
 // }

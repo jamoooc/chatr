@@ -31,14 +31,14 @@ int process_input(char *input_buffer, args_t *args, WINDOW **windows) {
       set_client_username(input_buffer, args, windows);
       break;
     case '!':
-      add_client(input_buffer, args, windows);
+      client_connect(input_buffer, args, windows);
       break;
     default:
       // create message for queue
       if (args->active_client != NULL) {
         // create message
-        msg_t *message = create_message(input_buffer, args, windows);
-        append_message(message, args->message_queue, windows);
+        msg_t *message = message_create(input_buffer, args, windows);
+        message_append(message, args->message_queue, windows);
       } else {
         werase(windows[INFO]);
         mvwprintw(windows[INFO], 1, 1, "No active client.\n");
@@ -123,9 +123,7 @@ int valid_port(char *input) {
   return true;
 }
 
-
 /* check for valid_username */
-
 
 bool valid_username(char *username) {
   int len = strlen(username);
@@ -140,9 +138,7 @@ bool valid_username(char *username) {
   return true;
 }
 
-
 /* remove_first_char if @#!$ */
-
 
 void remove_first_char(char *input) {
   char c = input[0];
@@ -151,9 +147,7 @@ void remove_first_char(char *input) {
   }
 }
 
-
 /* remove_newline */
-
 
 int remove_newline(char *input) {
   int len = strlen(input);
@@ -167,9 +161,10 @@ int remove_newline(char *input) {
   return 0;
 }
 
+// TODO
+
 
 /* remove_trailing_whitespace */
-
 
 // removes any whitespace character
 void remove_trailing_whitespace(char *input) {
@@ -183,9 +178,7 @@ void remove_trailing_whitespace(char *input) {
   input[last + 1] = '\0';
 }
 
-
 /* handle_error */
-
 
 // will need to get return vales form funcs for error codes etc.
 void handle_error(int e, const char *str) {

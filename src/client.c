@@ -1,13 +1,13 @@
 #include "client.h"
 
-/* create_client */
+/* client_create */
 
-client_t *create_client(int socket, char *username) {
+client_t *client_create(int socket, char *username) {
   // allocate memory for new client
   client_t *client;
   client = malloc(sizeof(client_t));
   if (client == NULL) {
-    perror("create_client");
+    perror("client_create");
     exit(EXIT_FAILURE);
   }
 
@@ -23,10 +23,10 @@ client_t *create_client(int socket, char *username) {
 }
 
 
-/* append_client to linked list */
+/* client_append to linked list */
 
 
-void append_client(client_t *new_client, args_t *args, WINDOW **windows) {
+void client_append(client_t *new_client, args_t *args, WINDOW **windows) {
   client_t **tmp = args->client_list;
   while (*tmp != NULL) {
     tmp = &(*tmp)->next;
@@ -34,14 +34,14 @@ void append_client(client_t *new_client, args_t *args, WINDOW **windows) {
   new_client->next = *tmp;  // *tmp is NULL
   *tmp = new_client;
 
-  print_clients(args->active_client, args->client_list, windows);
+  client_print(args->active_client, args->client_list, windows);
 }
 
 
-/* add_client */
+/* client_connect */
 
 
-int add_client(char *input, args_t *args, WINDOW **windows) {
+int client_connect(char *input, args_t *args, WINDOW **windows) {
   // remove '!' and '\n'
   remove_first_char(input);
   remove_newline(input);
@@ -119,9 +119,9 @@ int add_client(char *input, args_t *args, WINDOW **windows) {
   wrefresh(windows[INFO]);
 
   // add to client list and pfds
-  client_t *client = create_client(client_socket, username);
-  append_client(client, args, windows);
-  insert_pfd(&args->pfds, client_socket, args->fd_count, args->nfds);
+  client_t *client = client_create(client_socket, username);
+  client_append(client, args, windows);
+  pfd_insert(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if no client, set to active client
   if (args->active_client == NULL) {
@@ -157,7 +157,7 @@ int set_active_client(char *username, args_t *args, WINDOW **windows) {
       mvwprintw(windows[INFO], 1, 1, "%s %s.\n", ACTIVE_CLIENT_SET, username);
       box(windows[INFO], 0, 0);
       wrefresh(windows[INFO]);
-      print_history(client, args, windows);    
+      history_print(client, args, windows);    
       return 0;
     } 
     client = client->next;
@@ -208,15 +208,15 @@ int set_client_username(char *input, args_t *args, WINDOW **windows) {
   mvwprintw(windows[INFO], 1, 1, "Client '%s' username set to '%s'.\n", prev_uname, args->active_client->username);
   box(windows[INFO], 0, 0);
   wrefresh(windows[INFO]);
-  print_clients(args->active_client, args->client_list, windows);
+  client_print(args->active_client, args->client_list, windows);
   return 0;
 }
 
 
-/* disconnect_client */
+/* client_disconnect */
 
 
-void disconnect_client(int pfd_index, args_t *args, WINDOW **windows) {
+void client_disconnect(int pfd_index, args_t *args, WINDOW **windows) {
   // get disconnected client username
   client_t *client = *args->client_list;
   while (client->socket != args->pfds[pfd_index].fd) {
@@ -241,16 +241,16 @@ void disconnect_client(int pfd_index, args_t *args, WINDOW **windows) {
 
   // remove from client / pfd list and close socket
   close(args->pfds[pfd_index].fd);
-  remove_client(args->pfds[pfd_index].fd, args->client_list);
-  remove_pfd(args->pfds, pfd_index, args->fd_count);
-  print_clients(args->active_client, args->client_list, windows);
+  client_destroy(args->pfds[pfd_index].fd, args->client_list);
+  pfd_destroy(args->pfds, pfd_index, args->fd_count);
+  client_print(args->active_client, args->client_list, windows);
 }
 
 
 /* free single client sockets linked list */
 
 
-int remove_client(int socket, client_t **client_list) {
+int client_destroy(int socket, client_t **client_list) {
   if (socket < 0) {
     return 1;
   }
@@ -273,7 +273,7 @@ int remove_client(int socket, client_t **client_list) {
 /* print client */
 
 
-void print_clients(client_t *active_client, client_t **client_list, WINDOW **windows) {
+void client_print(client_t *active_client, client_t **client_list, WINDOW **windows) {
   client_t *client = *client_list;
   int y = 1, x = 1;
 
@@ -297,7 +297,7 @@ void print_clients(client_t *active_client, client_t **client_list, WINDOW **win
 /* free_client-list */
 
 
-int free_clients(client_t **client_list) {
+int client_free(client_t **client_list) {
   if (client_list == NULL) {
     return 1; // TODO err msg? this is not really an err
   }
@@ -305,7 +305,7 @@ int free_clients(client_t **client_list) {
   while(client != NULL) {
     del = client;
     client = del->next;
-    free_history(del->history);
+    client_history_free(del->history);
     free(del);
   }
   *client_list = NULL;
@@ -316,7 +316,7 @@ int free_clients(client_t **client_list) {
 /* free client messages in queue */
 
 
-int free_history(history_t *history) {
+int client_history_free(history_t *history) {
   if (history == NULL) {
     return 1;
   }

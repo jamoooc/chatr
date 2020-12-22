@@ -11,23 +11,6 @@
 #include <errno.h>          // errno
 #include <getopt.h>         // getopt
 
-
-// #include "client.h"
-// #include "connect.h"
-// #include "message.h"
-// #include "pfds.h"
-// #include "ui.h"
-// #include "utils.h"
-
-// #include <ncurses.h>
-// #include <sys/socket.h>
-// #include <sys/types.h>
-// #include <unistd.h>         
-// #include <netinet/in.h>
-// #include <assert.h>
-// #include <ctype.h>
-// #include <netdb.h>          
-
 /* integer constants */
 
 #define BACKLOG           10

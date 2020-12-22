@@ -20,11 +20,11 @@ void test_process_input(void) {
   args->quit = 1;
 
   // create clients
-  client_t *client1 = create_client(4, "user1");
-  client_t *client2 = create_client(5, "user2");
+  client_t *client1 = client_create(4, "user1");
+  client_t *client2 = client_create(5, "user2");
 
-  append_client(client1, args, windows);
-  append_client(client2, args, windows);
+  client_append(client1, args, windows);
+  client_append(client2, args, windows);
 
   // if input /quit, exit
   char *exit = "/quit";

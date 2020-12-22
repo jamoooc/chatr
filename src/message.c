@@ -1,12 +1,12 @@
 #include "message.h"
 
-/* insert_history */
+/* history_insert */
 
-void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **windows) {
+void history_insert(packet_t *packet, client_t *client, args_t *args, WINDOW **windows) {
   // create new history item
   history_t *new_msg = malloc(sizeof(history_t));
   if (new_msg == NULL) {
-    perror("malloc insert_history");
+    perror("malloc history_insert");
     exit(EXIT_FAILURE);
   }
   memset(new_msg, 0, sizeof(history_t));
@@ -21,16 +21,16 @@ void insert_history(packet_t *packet, client_t *client, args_t *args, WINDOW **w
 
   // refresh msg history if active client or indicate waiting message
   if (strcmp(client->username, args->active_client->username) == 0) {
-    print_history(client, args, windows);
+    history_print(client, args, windows);
   } else {
     client->unread_msg = 1;
-    print_clients(args->active_client, args->client_list, windows);
+    client_print(args->active_client, args->client_list, windows);
   }
 }
 
-/* print_history */
+/* history_print */
 
-int print_history(client_t *client, args_t *args, WINDOW **windows) {
+int history_print(client_t *client, args_t *args, WINDOW **windows) {
   if (client->history == NULL) {
     return 1;
   }
@@ -41,7 +41,7 @@ int print_history(client_t *client, args_t *args, WINDOW **windows) {
   int w_offset = HISTORY_OFFSET;
 
   client->unread_msg = 0;
-  print_clients(args->active_client, args->client_list, windows);
+  client_print(args->active_client, args->client_list, windows);
 
   // get offset if total msg history > window height
   history_t *msg = client->history;
@@ -63,9 +63,9 @@ int print_history(client_t *client, args_t *args, WINDOW **windows) {
   return 0;
 }
 
-/* create_message */
+/* message_create */
 
-msg_t *create_message(char *message_body, args_t *args, WINDOW **windows) {
+msg_t *message_create(char *message_body, args_t *args, WINDOW **windows) {
   // create packet for message struct
   packet_t *packet = malloc(sizeof(packet_t));
   if (packet == NULL) {
@@ -91,9 +91,9 @@ msg_t *create_message(char *message_body, args_t *args, WINDOW **windows) {
   return message;
 }
 
-/* append_message */
+/* message_append */
 
-void append_message(msg_t *new_message, msg_t **message_queue, WINDOW **windows) {
+void message_append(msg_t *new_message, msg_t **message_queue, WINDOW **windows) {
   msg_t **msg = message_queue;
   while (*msg != NULL) {
     msg = &(*msg)->next;
@@ -104,7 +104,7 @@ void append_message(msg_t *new_message, msg_t **message_queue, WINDOW **windows)
 
 /* remove message from queue */
 
-void remove_message(msg_t *message, msg_t **message_queue, WINDOW **windows) {
+void message_destroy(msg_t *message, msg_t **message_queue, WINDOW **windows) {
   // TODO not super happy with this strcmp 
   msg_t *del, **p = message_queue;
   while (*p != NULL && strcmp((**p).packet->body, message->packet->body) != 0) {
@@ -119,7 +119,7 @@ void remove_message(msg_t *message, msg_t **message_queue, WINDOW **windows) {
 
 /* free remaining messages in queue */
 
-int free_messages(msg_t **message_queue) {
+int message_free(msg_t **message_queue) {
   if (message_queue == NULL) {
     return 1;
   }
