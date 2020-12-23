@@ -39,7 +39,7 @@ TESTS = $(patsubst %,$(PATHS)%,$(TESTC)) # full path test source files
 
 BUILD_PATHS = $(PATHB) $(PATHD) $(PATHO) $(PATHR) $(PATHRF)
 
-default: $(TARGET) $(BUILD)
+default: $(BUILD) $(TARGET) 
 
 # link object files into executable
 $(TARGET): $(OBJECTS)

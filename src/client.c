@@ -5,9 +5,9 @@
 client_t *client_create(int socket, char *username) {
   // allocate memory for new client
   client_t *client;
-  client = malloc(sizeof(client_t));
-  if (client == NULL) {
-    perror("client_create");
+  if ((client = malloc(sizeof(client_t))) == NULL) {
+    // TODO when merge with append
+    // handle_error(-1, "client_create", args, windows);
     exit(EXIT_FAILURE);
   }
 
@@ -22,9 +22,7 @@ client_t *client_create(int socket, char *username) {
   return client;
 }
 
-
 /* client_append to linked list */
-
 
 void client_append(client_t *new_client, args_t *args, WINDOW **windows) {
   client_t **tmp = args->client_list;
@@ -37,9 +35,7 @@ void client_append(client_t *new_client, args_t *args, WINDOW **windows) {
   client_print(args->active_client, args->client_list, windows);
 }
 
-
 /* client_connect */
-
 
 int client_connect(char *input, args_t *args, WINDOW **windows) {
   // remove '!' and '\n'
@@ -61,6 +57,7 @@ int client_connect(char *input, args_t *args, WINDOW **windows) {
   }
 
   if (valid_port(port) == false) {
+    werase(windows[INFO]);
     mvwprintw(windows[INFO], 1, 1, "%s.\n", INVALID_PORT);
     box(windows[INFO], 0, 0);
     wrefresh(windows[INFO]);
@@ -84,25 +81,25 @@ int client_connect(char *input, args_t *args, WINDOW **windows) {
     return 4;
   }
   if (rv == -1) { // system error, sets errno
-    perror("inet_pton");
+    handle_error(rv, "client_connect: inet_pton", args, windows);
     exit(EXIT_FAILURE);
   }
 
   // create a socket to connect to remote server
   int client_socket;
   if ((client_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    perror("socket");
+    handle_error(client_socket, "client_connect: socket,", args, windows); // TODO err val
     exit(EXIT_FAILURE);
   }
 
   // attempt to connect to remote host
   int connect_status;
   if ((connect_status = connect(client_socket, (struct sockaddr *)&client_addr, sizeof(client_addr))) == -1) {
-    perror("connect");
+    handle_error(rv, "client_connect: inet_pton", args, windows);
     exit(EXIT_FAILURE);
   }
 
-  set_nonblock(client_socket);
+  socket_set_nonblock(client_socket);
 
   // destination string for inet_ntop
   char address_string[INET6_ADDRSTRLEN];
@@ -130,9 +127,7 @@ int client_connect(char *input, args_t *args, WINDOW **windows) {
   return 0;
 }
 
-
 /* set_active_client */
-
 
 int set_active_client(char *username, args_t *args, WINDOW **windows) {
   // remove '@' and '\n' before set username;
@@ -157,7 +152,8 @@ int set_active_client(char *username, args_t *args, WINDOW **windows) {
       mvwprintw(windows[INFO], 1, 1, "%s %s.\n", ACTIVE_CLIENT_SET, username);
       box(windows[INFO], 0, 0);
       wrefresh(windows[INFO]);
-      history_print(client, args, windows);    
+      client_print(args->active_client, args->client_list, windows);
+      history_print(client, args, windows);
       return 0;
     } 
     client = client->next;
@@ -173,9 +169,7 @@ int set_active_client(char *username, args_t *args, WINDOW **windows) {
   return 2;
 }
 
-
 /* set_client_username */
-
 
 int set_client_username(char *input, args_t *args, WINDOW **windows) {
   // active user must be set to edit username
@@ -212,9 +206,7 @@ int set_client_username(char *input, args_t *args, WINDOW **windows) {
   return 0;
 }
 
-
 /* client_disconnect */
-
 
 void client_disconnect(int pfd_index, args_t *args, WINDOW **windows) {
   // get disconnected client username
@@ -246,9 +238,7 @@ void client_disconnect(int pfd_index, args_t *args, WINDOW **windows) {
   client_print(args->active_client, args->client_list, windows);
 }
 
-
 /* free single client sockets linked list */
-
 
 int client_destroy(int socket, client_t **client_list) {
   if (socket < 0) {
@@ -269,9 +259,7 @@ int client_destroy(int socket, client_t **client_list) {
   }
 }
 
-
 /* print client */
-
 
 void client_print(client_t *active_client, client_t **client_list, WINDOW **windows) {
   client_t *client = *client_list;
@@ -293,9 +281,7 @@ void client_print(client_t *active_client, client_t **client_list, WINDOW **wind
   wrefresh(windows[CLIENTS]);
 }
 
-
 /* free_client-list */
-
 
 int client_free(client_t **client_list) {
   if (client_list == NULL) {
@@ -312,9 +298,7 @@ int client_free(client_t **client_list) {
   return 0;
 }
 
-
 /* free client messages in queue */
-
 
 int client_history_free(history_t *history) {
   if (history == NULL) {

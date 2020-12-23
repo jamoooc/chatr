@@ -14,7 +14,7 @@ void test_client_create(void) {
 }
 
 void test_client_append(void) {
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
   client_t *client_list = NULL;
@@ -58,7 +58,7 @@ void test_client_connect(void) {
   *  4 = INVALID PORT
   */
 
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
   args_t *args = malloc(sizeof(args_t));
@@ -94,7 +94,7 @@ void test_client_connect(void) {
 
 
 void test_set_active_client(void) {
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS); 
 
   client_t *client_list = NULL;
@@ -102,12 +102,12 @@ void test_set_active_client(void) {
   nfds_t nfds = N_PFDS;
   nfds_t fd_count = 0;
 
-  struct pollfd *pfds = pfd_create_array(nfds); 
+  args_t *args = malloc(sizeof(args_t));
+  struct pollfd *pfds = pfd_create_array(nfds, args, windows); 
 
   char *user1 = "user1";
   char *user2 = "user2";
 
-  args_t *args = malloc(sizeof(args_t));
   args->pfds = pfds;
   args->client_list = &client_list;
   args->active_client = NULL;
@@ -150,7 +150,7 @@ void test_set_active_client(void) {
 
 
 void test_set_client_username(void) {
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
   client_t *client_list = NULL;
@@ -299,7 +299,7 @@ void test_client_destroy(void) {
 
 void test_client_print(void)
 {
-  TEST_IGNORE_MESSAGE("TThis test was ignored on purpose.");
+  TEST_IGNORE_MESSAGE("This test was ignored on purpose.");
 }
 
 

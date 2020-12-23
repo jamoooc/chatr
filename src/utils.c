@@ -1,6 +1,8 @@
 #include "utils.h"
 
-/* process_input */
+#include <poll.h>
+
+/* get_input */
 
 void get_input(args_t *args, WINDOW **windows) {
   char input_buffer[BUFFER_LEN];
@@ -10,10 +12,12 @@ void get_input(args_t *args, WINDOW **windows) {
   wmove(windows[INPUT], 0, 0);
   wrefresh(windows[INPUT]);
  
-  process_input(input_buffer, args, windows);
+  handle_input(input_buffer, args, windows);
 }
 
-int process_input(char *input_buffer, args_t *args, WINDOW **windows) {
+/* handle_input */
+
+int handle_input(char *input_buffer, args_t *args, WINDOW **windows) {
   // check for exit condition
   if (strcmp(input_buffer, "/quit") == 0) {
     args->quit = 0;
@@ -53,7 +57,6 @@ int process_input(char *input_buffer, args_t *args, WINDOW **windows) {
 
 /* set_host_username */
 
-
 int set_host_username(char *input, args_t *args, WINDOW **windows) {
   // remove '$' and '\n' before set username;
   remove_first_char(input);
@@ -79,9 +82,7 @@ int set_host_username(char *input, args_t *args, WINDOW **windows) {
   return 0;
 }
 
-
 /* check for valid_port */
-
 
 int valid_port(char *input) {
   // no trailing whitespace
@@ -162,11 +163,9 @@ int remove_newline(char *input) {
 }
 
 // TODO
-
-
 /* remove_trailing_whitespace */
 
-// removes any whitespace character
+// removes *any* whitespace character at end
 void remove_trailing_whitespace(char *input) {
   int i = 0, last = 0;
   while (input[i] != '\0') {
@@ -180,12 +179,19 @@ void remove_trailing_whitespace(char *input) {
 
 /* handle_error */
 
-// will need to get return vales form funcs for error codes etc.
-void handle_error(int e, const char *str) {
+void handle_error(int rv, const char *func, args_t *args, WINDOW **windows) {
   FILE *log_file = fopen("logfile.txt", "w");
-  fprintf(log_file, "%s: %s", str, strerror(e));
+  char *err_str = strerror(errno);
+  // rv of failed system calls is -1
+  fprintf(log_file, "%s failed with error code %d. errno: %s.", func, rv, err_str);
   fclose(log_file);
-  exit(EXIT_FAILURE);
+
+  // graceful shutdown
+  free(args->pfds);
+  client_free(args->client_list);
+  message_free(args->message_queue);
+  window_free(windows); // individual windows
+  free(windows); // windows array
+  endwin();
+  fprintf(stderr, "%s.\n", ERROR_EXIT_MESSAGE);
 }
-
-

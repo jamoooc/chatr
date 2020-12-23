@@ -2,10 +2,10 @@
 
 /* pfd_create_array */
 
-struct pollfd *pfd_create_array(nfds_t nfds) {
- struct pollfd *pfds = malloc(sizeof(*pfds) * nfds);
-  if (pfds == NULL) {
-    perror("pfds");
+struct pollfd *pfd_create_array(nfds_t nfds, args_t *args, WINDOW **windows) {
+ struct pollfd *pfds;
+  if ((pfds = malloc(sizeof(*pfds) * nfds)) == NULL) {
+    handle_error(-1, "pfd_create_array: malloc,", args, windows); // TODO err val
     exit(EXIT_FAILURE);
   }
 

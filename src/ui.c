@@ -4,16 +4,16 @@
 
 void init_curses(WINDOW **windows) {
   initscr();
-  welcome_screen();
+  welcome_screen(windows);
   init_ui(windows);
   print_usage(windows[USAGE]);
 }
 
 /* welcome_screen */
 
-void welcome_screen(void) {
+void welcome_screen(WINDOW **windows) {
   dim_t *welcome_dim = init_dim(LINES, COLS, 0, 0);
-  WINDOW *welcome_win = create_window(welcome_dim, TRUE);
+  WINDOW *welcome_win = window_create(welcome_dim, TRUE, windows);
 
   int y, x;
   y = (LINES / 2) - 4;
@@ -34,11 +34,11 @@ void welcome_screen(void) {
   delwin(welcome_win);
 }
 
-/* create_windows_array */
+/* window_creates_array */
 
-void exit_screen(void) {
+void exit_screen(WINDOW **windows) {
   dim_t *exit_dim = init_dim(0, 0, 0, 0);
-  WINDOW *exit_win = create_window(exit_dim, TRUE);
+  WINDOW *exit_win = window_create(exit_dim, TRUE, windows);
 
   int y, x;
   y = (LINES / 2) / 2;
@@ -52,22 +52,24 @@ void exit_screen(void) {
   delwin(exit_win);
 }
 
-/* create_windows_array */
+/* window_creates_array */
 
-WINDOW **create_windows_array(int n) {
+WINDOW **window_create_array(int n) {
   WINDOW **window_array = malloc(sizeof(WINDOW *) * n);
   if (window_array == NULL) {
-    perror("malloc create_windows_array");
+    perror("window_create_array malloc");
     exit(EXIT_FAILURE);
   }
   return window_array;
 }
 
-/* create_window */
+/* window_create */
 
-WINDOW *create_window(dim_t *dim, int box) {
+WINDOW *window_create(dim_t *dim, int box, WINDOW **windows) {
   WINDOW *new_win = newwin(dim->height, dim->width, dim->starty, dim->startx);
   if (new_win == NULL) {
+    // window_free(windows); // TODO this will fail if not all created
+    free(windows);
     perror("create window");
     exit(EXIT_FAILURE);
   }
@@ -82,8 +84,8 @@ WINDOW *create_window(dim_t *dim, int box) {
 /* init_dimensions */
 
 dim_t *init_dim(int h, int w, int y, int x) {
-  dim_t *dim = malloc(sizeof(dim_t)); // ptr free'd in create_window
-  if (dim == NULL) {
+  dim_t *dim;
+  if ((dim = malloc(sizeof(dim_t))) == NULL) { // ptr free'd in window_create
     perror("init dim");
     exit(EXIT_FAILURE);
   }
@@ -106,12 +108,12 @@ void init_ui(WINDOW **windows) {
   input_border = init_dim(HEIGHT_LOW, R_WIDTH, LINES - HEIGHT_LOW, L_WIDTH);
 
   // windows ordered from left to right, top to bottom
-  windows[0] = create_window(clients, TRUE);
-  windows[1] = create_window(info, TRUE);
-  windows[2] = create_window(history, TRUE);
-  windows[3] = create_window(usage, TRUE);
-  windows[4] = create_window(input, FALSE);
-  windows[5] = create_window(input_border, TRUE);
+  windows[0] = window_create(clients, TRUE, windows);
+  windows[1] = window_create(info, TRUE, windows);
+  windows[2] = window_create(history, TRUE, windows);
+  windows[3] = window_create(usage, TRUE, windows);
+  windows[4] = window_create(input, FALSE, windows);
+  windows[5] = window_create(input_border, TRUE, windows);
 
   // check for NULL ptrs
   for (int i = 0; i < N_WINDOWS; i++) {
@@ -137,7 +139,7 @@ void print_usage(WINDOW *win) {
 
 /* free_windows_array */
 
-void free_windows(WINDOW **window) {
+void window_free(WINDOW **window) {
   for (int i = 0; i < N_WINDOWS; i++) {
     werase(window[i]); 
     wrefresh(window[i]);

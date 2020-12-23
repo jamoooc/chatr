@@ -5,15 +5,15 @@ void test_get_input(void) {
   TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
 }
 
-void test_process_input(void) {
+void test_handle_input(void) {
   // create args
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
   client_t *client_list = NULL;
   msg_t *message_queue = NULL;
 
-  args_t *args = malloc(sizeof(args));
+  args_t *args = malloc(sizeof(args_t));
   args->message_queue = &message_queue;
   args->client_list = &client_list;
   args->active_client = NULL;
@@ -28,7 +28,7 @@ void test_process_input(void) {
 
   // if input /quit, exit
   char *exit = "/quit";
-  process_input(exit, args, windows);
+  handle_input(exit, args, windows);
   TEST_ASSERT_EQUAL_INT(0, args->quit);
 
   // sets active client
@@ -36,7 +36,7 @@ void test_process_input(void) {
   strcpy(set_active, "@user2");
   char *expect_active = malloc(sizeof(char) * USERNAME_LEN);
   strcpy(expect_active, "user2");
-  process_input(set_active, args, windows);
+  handle_input(set_active, args, windows);
   TEST_ASSERT_EQUAL_STRING(expect_active, args->active_client->username);
   free(set_active);
   free(expect_active);
@@ -46,11 +46,10 @@ void test_process_input(void) {
   strcpy(set_host, "$hostname");
   char *expect_host = malloc(sizeof(char) * USERNAME_LEN);
   strcpy(expect_host, "hostname");
-  process_input(set_host, args, windows);
+  handle_input(set_host, args, windows);
   TEST_ASSERT_EQUAL_STRING(set_host, args->host_username);
   free(set_host);
   free(expect_host);
-
   // adds new client
   // TODO
 
@@ -59,13 +58,16 @@ void test_process_input(void) {
   strcpy(q_msg, "this is a message");
   char *expect_q_msg = malloc(sizeof(char) * BUFFER_LEN);
   strcpy(expect_q_msg, "this is a message");
-  process_input(q_msg, args, windows);
+  handle_input(q_msg, args, windows);
   msg_t *msg = *args->message_queue;
   TEST_ASSERT_EQUAL_STRING(expect_q_msg, msg->packet->body);
   TEST_ASSERT_EQUAL_STRING(args->active_client->username, msg->client->username);
   TEST_ASSERT_EQUAL_STRING(args->host_username, msg->packet->username);
   free(q_msg);
   free(expect_q_msg);
+  
+  free(windows);
+  free(args);
 }
 
 
@@ -73,7 +75,7 @@ void test_process_input(void) {
 void test_set_host_username(void) {
   char *input = "username";
   args_t *args = malloc(sizeof(args_t));
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
   set_host_username(input, args, windows);
@@ -82,7 +84,7 @@ void test_set_host_username(void) {
   TEST_ASSERT_EQUAL_STRING_LEN(input, args->host_username, 9);
   
   free(args);
-  free_windows(windows);
+  window_free(windows);
 }
 
 void test_valid_port(void) {
@@ -300,5 +302,47 @@ void test_remove_trailing_whitespace(void) {
 }
 
 void test_handle_error() {
-  TEST_IGNORE_MESSAGE("This Test Was Ignored On Purpose");
+  errno = 5; // !?
+  int rv = 1;
+
+  WINDOW **windows = window_create_array(N_WINDOWS);
+  memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
+
+  windows[0] = newwin(1,1,1,1);
+  windows[1] = newwin(1,1,1,1);
+  windows[2] = newwin(1,1,1,1);
+  windows[3] = newwin(1,1,1,1);
+  windows[4] = newwin(1,1,1,1);
+  windows[5] = newwin(1,1,1,1);
+
+  client_t *client_list = NULL;
+  client_list = client_create(4, "user");
+  args_t *args = malloc(sizeof(args));
+  msg_t *message_queue = message_create("msg", args, windows);
+  nfds_t nfds = N_PFDS;
+  struct pollfd *pfds = pfd_create_array(nfds, args, windows); 
+
+  args->message_queue = &message_queue;
+  args->client_list = &client_list;
+  args->pfds = pfds;
+
+  TEST_ASSERT_NOT_NULL(windows);
+  TEST_ASSERT_NOT_NULL(args->pfds);
+  TEST_ASSERT_NOT_NULL(client_list);
+  TEST_ASSERT_NOT_NULL(message_queue);
+  TEST_ASSERT_NOT_NULL(args);
+
+  handle_error(rv, "func-name", args, windows);
+
+  FILE *file = fopen("logfile.txt", "r");
+
+  char c;
+  int i = 0;
+  char actual[100] = { '\0' };
+  while ((c = fgetc(file)) != EOF) {
+    actual[i++] = c;
+  }
+
+  char *expected = "func-name failed with error code 1. errno: Input/output error.";
+  TEST_ASSERT_EQUAL_STRING(expected, actual);
 }

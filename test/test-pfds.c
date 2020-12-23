@@ -2,21 +2,31 @@
 #include "../src/pfds.h"
 
 void test_pfd_create_array(void) {
+  WINDOW **windows = window_create_array(N_WINDOWS);
+  memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
+
+  args_t *args = malloc(sizeof(args_t));
   nfds_t nfds = N_PFDS;
-  struct pollfd *pfds = pfd_create_array(nfds);
+  struct pollfd *pfds = pfd_create_array(nfds, args, windows);
 
   // creates array
   TEST_ASSERT_NOT_NULL(pfds);
   // of size ?
+  free(windows);
+  free(args);
   free(pfds);
 }
 
 
 
 void test_pfd_insert(void) {
+  WINDOW **windows = window_create_array(N_WINDOWS);
+  memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
+
+  args_t *args = malloc(sizeof(args_t));
   nfds_t fd_count = 0;
   nfds_t nfds = N_PFDS;
-  struct pollfd *pfds = pfd_create_array(nfds);
+  struct pollfd *pfds = pfd_create_array(nfds, args, windows);
 
   int new_fd1 = 5;
   int new_fd2 = 6;
@@ -32,16 +42,22 @@ void test_pfd_insert(void) {
   TEST_ASSERT_EQUAL_INT(new_fd3, pfds[2].fd);
 
   // test realloc by size of new array?
-
+  
+  free(windows);
+  free(args);
   free(pfds);
 }
 
 
 
 void test_pfd_destroy(void) {
+  WINDOW **windows = window_create_array(N_WINDOWS);
+  memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
+
+  args_t *args = malloc(sizeof(args_t));
   nfds_t fd_count = 0;
   nfds_t nfds = N_PFDS;
-  struct pollfd *pfds = pfd_create_array(nfds);
+  struct pollfd *pfds = pfd_create_array(nfds, args, windows);
 
   int new_fd1 = 5;
   int new_fd2 = 6;
@@ -62,5 +78,7 @@ void test_pfd_destroy(void) {
   // prev last pfd copied over pfd to be replaced
   TEST_ASSERT_EQUAL_INT(last_fd, pfds[i].fd);
 
+  free(windows);
+  free(args);
   free(pfds);
 }

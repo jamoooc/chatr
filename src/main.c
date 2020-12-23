@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
       case 'p':
         if ((valid_port(optarg)) == false) {
           printf("%s.\n", INVALID_PORT);
+          fprintf(stderr, "%s.\n", INVALID_PORT);
           usage(basename(argv[0]), opt);
           exit(EXIT_FAILURE);
         } else {
@@ -28,14 +29,14 @@ int main(int argc, char *argv[]) {
         }
         break;
       case 'v':
-        printf("%s version %s\n", basename(argv[0]), VERSION);
+        fprintf(stdout, "%s version %s\n", basename(argv[0]), VERSION);
         exit(EXIT_SUCCESS);
-        break;
       case 'h':
+        usage(basename(argv[0]), opt);
+        exit(EXIT_SUCCESS);
       default:
         usage(basename(argv[0]), opt);
         exit(EXIT_FAILURE);
-        break;
     }
   }
 
@@ -49,14 +50,9 @@ int main(int argc, char *argv[]) {
   int server_socket;
   client_t *client_list = NULL;
   msg_t *message_queue = NULL;
-
-  // poll
-  nfds_t nfds = N_PFDS;
-  nfds_t fd_count = 0;
-  struct pollfd *pfds = pfd_create_array(nfds); 
   
   // ncurses
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   init_curses(windows);
 
   // args object
@@ -66,14 +62,20 @@ int main(int argc, char *argv[]) {
   args->server_socket = &server_socket;
   args->client_list = &client_list;
   args->message_queue = &message_queue;
+  args->active_client = NULL;
+  
+  // poll
+  int poll_count;
+  nfds_t nfds = N_PFDS;
+  nfds_t fd_count = 0;
+  struct pollfd *pfds = pfd_create_array(nfds, args, windows); 
   args->pfds = pfds;
   args->fd_count = &fd_count;
   args->nfds = &nfds;
-  args->active_client = NULL;
 
   // start listening server
-  init_server(&server_socket, args, windows);
-  set_nonblock(server_socket);
+  server_init(&server_socket, args, windows);
+  socket_set_nonblock(server_socket);
 
   // add stdin and server socket to pfds
   pfd_insert(&args->pfds, STDIN_FILENO, &fd_count, &nfds);
@@ -85,9 +87,8 @@ int main(int argc, char *argv[]) {
     wrefresh(windows[INPUT]);
 
     // poll file descriptors for sockets ready to read
-    int poll_count = poll(args->pfds, fd_count, 0);
-    if (poll_count == -1) {
-      perror("poll");
+    if ((poll_count = poll(args->pfds, fd_count, 0)) == -1) {
+      handle_error(poll_count, "poll", args, windows);
       exit(EXIT_FAILURE);
     }
 
@@ -112,7 +113,8 @@ int main(int argc, char *argv[]) {
 
       // socket error
       if (args->pfds[i].revents & POLLERR) {
-        perror("revents socket");
+        handle_error(poll_count, "revents socket", args, windows);
+        endwin();
         exit(EXIT_FAILURE);
       }
 
@@ -144,24 +146,22 @@ int main(int argc, char *argv[]) {
   free(args->pfds);
   client_free(args->client_list);
   message_free(args->message_queue);
-  free_windows(windows); // individuals windows
+  exit_screen(windows);
+  window_free(windows); // individuals windows
   free(windows); // windows array
-  exit_screen();
   endwin(); // end curses
   close(server_socket);
   exit(EXIT_SUCCESS);
 }
 
-
 /* usage */
 
-
-void usage(char *progname, int opt) {
+static void usage(char *progname, int opt) {
   if (opt == '?') { 
     fprintf(stderr, "Unknown option '-%c'.\n", optopt);
   }
   if (opt == ':') {
-    fprintf(stderr, "Missing arguement for option '-%c'.\n", optopt);
+    fprintf(stderr, "Missing argument for option '-%c'.\n", optopt);
   }
-  fprintf(stderr, USAGE_FMT, progname ? progname : DEFAULT_PROGNAME);
+  fprintf(stdout, USAGE_FMT, progname ? progname : DEFAULT_PROGNAME);
 }

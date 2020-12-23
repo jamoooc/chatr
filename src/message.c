@@ -4,9 +4,9 @@
 
 void history_insert(packet_t *packet, client_t *client, args_t *args, WINDOW **windows) {
   // create new history item
-  history_t *new_msg = malloc(sizeof(history_t));
-  if (new_msg == NULL) {
-    perror("malloc history_insert");
+  history_t *new_msg;
+  if ((new_msg = malloc(sizeof(history_t))) == NULL) {
+    handle_error(-1, "history_insert: malloc,", args, windows);
     exit(EXIT_FAILURE);
   }
   memset(new_msg, 0, sizeof(history_t));
@@ -18,6 +18,11 @@ void history_insert(packet_t *packet, client_t *client, args_t *args, WINDOW **w
   new_msg->packet = packet;
   new_msg->next = prev_head;
   client->history = new_msg;
+
+  // if no active client, set to target client
+  if (args->active_client == NULL) {
+    args->active_client = client;
+  }
 
   // refresh msg history if active client or indicate waiting message
   if (strcmp(client->username, args->active_client->username) == 0) {
@@ -67,9 +72,9 @@ int history_print(client_t *client, args_t *args, WINDOW **windows) {
 
 msg_t *message_create(char *message_body, args_t *args, WINDOW **windows) {
   // create packet for message struct
-  packet_t *packet = malloc(sizeof(packet_t));
-  if (packet == NULL) {
-    perror("malloc packet_t");
+  packet_t *packet;
+  if ((packet = malloc(sizeof(packet_t))) == NULL) {
+    handle_error(-1, "message_create: malloc,", args, windows);
     exit(EXIT_FAILURE);
   }
 
@@ -78,9 +83,9 @@ msg_t *message_create(char *message_body, args_t *args, WINDOW **windows) {
   strcpy(packet->username, args->host_username);
 
   // create message for queue
-  msg_t *message = malloc(sizeof(msg_t));
-  if (message == NULL) {
-    perror("malloc msg_t");
+  msg_t *message;
+  if ((message = malloc(sizeof(msg_t))) == NULL) {
+    handle_error(-1, "message_create: malloc,", args, windows);
     exit(EXIT_FAILURE);
   }
 

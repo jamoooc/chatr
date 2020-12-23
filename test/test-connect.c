@@ -9,7 +9,7 @@ void test_packet_receive(void) {
   TEST_IGNORE_MESSAGE("This test was ignored on purpose.");
 }
 
-void test_init_server(void) {
+void test_server_init(void) {
   TEST_IGNORE_MESSAGE("This test was ignored on purpose.");
 }
 

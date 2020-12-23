@@ -38,7 +38,8 @@ int main(void) {
 
   printf("\nutils\n\n");
 
-  RUN_TEST(test_process_input);
+  RUN_TEST(test_handle_input);
+  RUN_TEST(test_handle_error);
   RUN_TEST(test_set_host_username);
   RUN_TEST(test_valid_port);
   RUN_TEST(test_valid_username);
@@ -50,7 +51,6 @@ int main(void) {
 
   RUN_TEST(test_history_insert);
   RUN_TEST(test_history_print);
-
   RUN_TEST(test_message_create);
   RUN_TEST(test_message_append);
   RUN_TEST(test_message_destroy);
@@ -61,7 +61,7 @@ int main(void) {
   RUN_TEST(test_accept_connection);
   RUN_TEST(test_packet_transmit);
   RUN_TEST(test_packet_receive);
-  RUN_TEST(test_init_server);
+  RUN_TEST(test_server_init);
   
   return UNITY_END();
 }

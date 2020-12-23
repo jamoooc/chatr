@@ -2,7 +2,7 @@
 #include "../src/message.h"
 
 void test_history_insert(void) {
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
   
   client_t *client = malloc(sizeof(client_t));
@@ -42,7 +42,7 @@ void test_history_insert(void) {
 
 void test_history_print(void) {
   // if history NULL, return err val
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
   args_t *args = malloc(sizeof(args_t));
   
@@ -63,7 +63,7 @@ void test_history_print(void) {
 
 
 void test_message_create(void) {
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
   args_t *args = malloc(sizeof(args_t));
@@ -90,7 +90,7 @@ void test_message_create(void) {
 
 
 void test_message_append(void) {
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
   msg_t *head = NULL;
@@ -123,7 +123,7 @@ void test_message_append(void) {
 
 
 void test_message_destroy(void) {
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
   
   client_t *active_client = malloc(sizeof(client_t));
@@ -217,7 +217,7 @@ void test_message_destroy(void) {
 
 void test_message_free(void) {
   msg_t *head = NULL;
-  WINDOW **windows = create_windows_array(N_WINDOWS);
+  WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
   args_t *args = malloc(sizeof(args_t));

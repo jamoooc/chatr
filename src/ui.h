@@ -8,10 +8,8 @@
 #define LEFT 0.30 * COLS
 #define RIGHT 0.70 * COLS
 #define MIN_L_WIDTH 18 // to fit usage reminder
-
 #define L_WIDTH (MIN_L_WIDTH > LEFT ? MIN_L_WIDTH : LEFT)
 #define R_WIDTH (L_WIDTH == MIN_L_WIDTH ? COLS - L_WIDTH : RIGHT)
-
 #define HEIGHT_UPP 4
 #define HEIGHT_MID (LINES - (HEIGHT_UPP + HEIGHT_LOW))
 #define HEIGHT_LOW 4
@@ -28,7 +26,6 @@
 #define CONTINUE_MSG      "Press any key to continue."
 #define SHUTDOWN_MSG      "Shutting down..."
 
-
 typedef struct win_dim {
   int height;
   int width;
@@ -36,14 +33,14 @@ typedef struct win_dim {
   int startx;
 } dim_t;
 
-void welcome_screen(void);
-void exit_screen(void);
-void print_usage(WINDOW *win);
+void welcome_screen(WINDOW **windows);
+void exit_screen(WINDOW **windows);
+void print_usage(WINDOW *window);
 void init_curses(WINDOW **windows);
 void init_ui(WINDOW **windows);
-void free_windows(WINDOW **windows);
+void window_free(WINDOW **windows);
 dim_t *init_dim(int h, int w, int y, int x);
-WINDOW **create_windows_array(int n);
-WINDOW *create_window(dim_t *dim, int draw_box);
+WINDOW **window_create_array(int n);
+WINDOW *window_create(dim_t *dim, int draw_box, WINDOW **windows);
 
 #endif
