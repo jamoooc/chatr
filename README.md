@@ -1,66 +1,63 @@
 # chatr
 
-Multi-user chat client written in C, using the ncurses library for UI, and Unity for tests.
+Multi-user chat client in C, using the ncurses library for UI, and Unity for tests.
 
-Run `make` to compile or `make test` to run the test suite.
+Run `make` to compile or `make test` to run the tests.
 
 ## usage
 
 `./chatr [-p localport 0-65535] [-h help] [-v version]`
 
-Set the host name with:         `$hostname`.
-Set the client name with:       `#clientname`.
-Select the active client with:  `@clientname`.
-Connect to a new client with:   `!IP PORT`.
-Exit with:                      `/quit`.
+- Set the host name with:         `$hostname`.
+- Set the client name with:       `#clientname`.
+- Select the active client with:  `@clientname`.
+- Connect to a new client with:   `!IP PORT`.
+- Exit with:                      `/quit`.
 
 ## structure
 
 ```
 get_opt
   valid_port
-create_pfds_array
-create_windows_array
+pfd_create_array
+window_create_array
 args
 init_curses
 init_server
-insert_pfd
-  poll
-    get_input
-      process_input
-        set_active_client
-          valid_username
-        set_host_username
-        set_client_username
-          valid_username
-        add_client
-          create_client
-          append_client
-          insert_pfd
-        create_message
-          append_message
-      accept_connection
-        create_client
-        append_client
-        insert_pfd
-          print_clients
-      disconnect_client
-        close
-        remove_client
-        remove_pfd
-        print_clients
-      receive_packet
-        insert_history
-        disconnect_client
-      transmit_packet
-        insert_history
-        remove_message
+pfd_insert
+poll
+  get_input
+    handle_input
+      client_set_active
+        valid_username
+      set_host_username
+      set_client_username
+        valid_username
+      client_connect
+        client_create
+        pfd_insert
+      message_create
+  accept_connection
+    client_create
+    pfd_insert
+      client_print
+  client_disconnect
+    client_destroy
+    pfd_destroy
+    client_print
+  packet_receive
+    history_insert
+    client_disconnect
+  packet_transmit
+    history_insert
+    message_destroy
+client_free
+  client_history_free
+message_free
+window_free
+free(windows)
 free(args)
-free_client
-  free_history
-free_messages
-free_windows
-free(windows_arr)
+endwin
 close(server)
 exit
 ```
