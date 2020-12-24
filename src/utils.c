@@ -41,8 +41,9 @@ int handle_input(char *input_buffer, args_t *args, WINDOW **windows) {
       // create message for queue
       if (args->active_client != NULL) {
         // create message
-        msg_t *message = message_create(input_buffer, args, windows);
-        message_append(message, args->message_queue, windows);
+        // msg_t *message = 
+        message_create(input_buffer, args, windows);
+        // message_append(message, args->message_queue, windows);
       } else {
         werase(windows[INFO]);
         mvwprintw(windows[INFO], 1, 1, "No active client.\n");
@@ -188,10 +189,11 @@ void handle_error(int rv, const char *func, args_t *args, WINDOW **windows) {
 
   // graceful shutdown
   free(args->pfds);
+  args->pfds = NULL;
   client_free(args->client_list);
   message_free(args->message_queue);
-  window_free(windows); // individual windows
-  free(windows); // windows array
+  window_free(windows);
+  free(args);
   endwin();
   fprintf(stderr, "%s.\n", ERROR_EXIT_MESSAGE);
 }

@@ -26,7 +26,6 @@ int main(void) {
   printf("\ntest_client\n\n");
 
   RUN_TEST(test_client_create);
-  RUN_TEST(test_client_append);
   RUN_TEST(test_client_connect);
   RUN_TEST(test_client_print);
   RUN_TEST(test_client_disconnect);
@@ -49,12 +48,11 @@ int main(void) {
 
   printf("\ntest-message\n\n");
 
-  RUN_TEST(test_history_insert);
-  RUN_TEST(test_history_print);
   RUN_TEST(test_message_create);
-  RUN_TEST(test_message_append);
   RUN_TEST(test_message_destroy);
   RUN_TEST(test_message_free);
+  RUN_TEST(test_history_insert);
+  RUN_TEST(test_history_print);
 
   printf("\nconnect\n\n");
 

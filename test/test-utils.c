@@ -6,25 +6,21 @@ void test_get_input(void) {
 }
 
 void test_handle_input(void) {
-  // create args
   WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
   client_t *client_list = NULL;
   msg_t *message_queue = NULL;
-
   args_t *args = malloc(sizeof(args_t));
+
   args->message_queue = &message_queue;
   args->client_list = &client_list;
   args->active_client = NULL;
   args->quit = 1;
 
   // create clients
-  client_t *client1 = client_create(4, "user1");
-  client_t *client2 = client_create(5, "user2");
-
-  client_append(client1, args, windows);
-  client_append(client2, args, windows);
+  client_create(4, "user1", args, windows);
+  client_create(5, "user2", args, windows);
 
   // if input /quit, exit
   char *exit = "/quit";
@@ -33,56 +29,60 @@ void test_handle_input(void) {
 
   // sets active client
   char *set_active = malloc(sizeof(char) * USERNAME_LEN);
-  strcpy(set_active, "@user2");
   char *expect_active = malloc(sizeof(char) * USERNAME_LEN);
+  strcpy(set_active, "@user2");
   strcpy(expect_active, "user2");
   handle_input(set_active, args, windows);
   TEST_ASSERT_EQUAL_STRING(expect_active, args->active_client->username);
-  free(set_active);
-  free(expect_active);
 
   // sets host username
   char *set_host = malloc(sizeof(char) * 30);
-  strcpy(set_host, "$hostname");
   char *expect_host = malloc(sizeof(char) * USERNAME_LEN);
+  strcpy(set_host, "$hostname");
   strcpy(expect_host, "hostname");
   handle_input(set_host, args, windows);
   TEST_ASSERT_EQUAL_STRING(set_host, args->host_username);
-  free(set_host);
-  free(expect_host);
+  
   // adds new client
   // TODO
 
   // adds message to queue
   char *q_msg = malloc(sizeof(char) * BUFFER_LEN);
-  strcpy(q_msg, "this is a message");
   char *expect_q_msg = malloc(sizeof(char) * BUFFER_LEN);
+  strcpy(q_msg, "this is a message");
   strcpy(expect_q_msg, "this is a message");
   handle_input(q_msg, args, windows);
   msg_t *msg = *args->message_queue;
   TEST_ASSERT_EQUAL_STRING(expect_q_msg, msg->packet->body);
   TEST_ASSERT_EQUAL_STRING(args->active_client->username, msg->client->username);
   TEST_ASSERT_EQUAL_STRING(args->host_username, msg->packet->username);
+
+  free(set_active);
+  free(expect_active);
+  free(set_host);
+  free(expect_host);
   free(q_msg);
   free(expect_q_msg);
-  
-  free(windows);
+  window_free(windows);
   free(args);
 }
 
 
 
 void test_set_host_username(void) {
-  char *input = "username";
-  args_t *args = malloc(sizeof(args_t));
   WINDOW **windows = window_create_array(N_WINDOWS);
   memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
+  args_t *args = malloc(sizeof(args_t));
+
+  char *input = malloc(sizeof(char) * 9);
+  strcpy(input, "username");
 
   set_host_username(input, args, windows);
 
   TEST_ASSERT_EQUAL_STRING(input, args->host_username);
   TEST_ASSERT_EQUAL_STRING_LEN(input, args->host_username, 9);
   
+  free(input);
   free(args);
   window_free(windows);
 }
@@ -135,6 +135,7 @@ void test_valid_username(void) {
   char *d = "!nvalid";
   char *e = "!@£$^&*";
   char *f = "i n v a l i d";
+  char *g = "i_n_v_a-l-i-d";
 
   TEST_ASSERT_TRUE(valid_username(a));
   TEST_ASSERT_TRUE(valid_username(b));
@@ -143,6 +144,7 @@ void test_valid_username(void) {
   TEST_ASSERT_FALSE(valid_username(d));
   TEST_ASSERT_FALSE(valid_username(e));
   TEST_ASSERT_FALSE(valid_username(f));
+  TEST_ASSERT_FALSE(valid_username(g));
 }
 
 void test_remove_first_char(void) {
@@ -302,12 +304,10 @@ void test_remove_trailing_whitespace(void) {
 }
 
 void test_handle_error() {
-  errno = 5; // !?
-  int rv = 1;
-
   WINDOW **windows = window_create_array(N_WINDOWS);
-  memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
+  // memset(windows, '\0', sizeof(*windows) * N_WINDOWS);
 
+  // init manually as cannot run ncurses within test
   windows[0] = newwin(1,1,1,1);
   windows[1] = newwin(1,1,1,1);
   windows[2] = newwin(1,1,1,1);
@@ -315,16 +315,32 @@ void test_handle_error() {
   windows[4] = newwin(1,1,1,1);
   windows[5] = newwin(1,1,1,1);
 
+  args_t *args = malloc(sizeof(args_t));
+  msg_t *message_queue = NULL;
   client_t *client_list = NULL;
-  client_list = client_create(4, "user");
-  args_t *args = malloc(sizeof(args));
-  msg_t *message_queue = message_create("msg", args, windows);
   nfds_t nfds = N_PFDS;
   struct pollfd *pfds = pfd_create_array(nfds, args, windows); 
 
-  args->message_queue = &message_queue;
+  // init args freed by handle_error
   args->client_list = &client_list;
+  args->message_queue = &message_queue;
   args->pfds = pfds;
+
+  // active user
+  char *test_user = malloc(sizeof(char) * 9);
+  strcpy(test_user, "testuser");
+  client_create(4, test_user, args, windows);
+  args->active_client = client_list;
+
+  // for msg in queue
+  char *hostname = malloc(sizeof(char) * 9);
+  strcpy(hostname, "hostname");
+  strcpy(args->host_username, hostname);
+  
+  // msg in queue 
+  char *msg = malloc(sizeof(char) * 5);
+  strcpy(msg, "msg");
+  message_create(msg, args, windows);
 
   TEST_ASSERT_NOT_NULL(windows);
   TEST_ASSERT_NOT_NULL(args->pfds);
@@ -332,8 +348,12 @@ void test_handle_error() {
   TEST_ASSERT_NOT_NULL(message_queue);
   TEST_ASSERT_NOT_NULL(args);
 
+  errno = 5; // !?
+  int rv = 1;
+
   handle_error(rv, "func-name", args, windows);
 
+  // check logfile produced by handle_error
   FILE *file = fopen("logfile.txt", "r");
 
   char c;
@@ -345,4 +365,22 @@ void test_handle_error() {
 
   char *expected = "func-name failed with error code 1. errno: Input/output error.";
   TEST_ASSERT_EQUAL_STRING(expected, actual);
+
+  TEST_ASSERT_NULL(windows[0]);
+  TEST_ASSERT_NULL(windows[1]);
+  TEST_ASSERT_NULL(windows[2]);
+  TEST_ASSERT_NULL(windows[3]);
+  TEST_ASSERT_NULL(windows[4]);
+  TEST_ASSERT_NULL(windows[5]);
+
+  // windows, pfds, client_list, msg_queue & args freed and set to NULL in handle_error
+  TEST_ASSERT_NULL(*windows);
+  TEST_ASSERT_NULL(args->pfds);
+  TEST_ASSERT_NULL(client_list);
+  TEST_ASSERT_NULL(message_queue);
+  // TEST_ASSERT_NULL(args);
+
+  free(test_user);
+  free(hostname);
+  free(msg);
 }

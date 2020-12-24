@@ -144,5 +144,9 @@ void window_free(WINDOW **window) {
     werase(window[i]); 
     wrefresh(window[i]);
     delwin(window[i]);
+    window[i] = NULL;
   }
+  free(*window);
+  *window = NULL;
+  window = NULL;
 }

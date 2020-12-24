@@ -3,7 +3,7 @@
 /* pfd_create_array */
 
 struct pollfd *pfd_create_array(nfds_t nfds, args_t *args, WINDOW **windows) {
- struct pollfd *pfds;
+  struct pollfd *pfds;
   if ((pfds = malloc(sizeof(*pfds) * nfds)) == NULL) {
     handle_error(-1, "pfd_create_array: malloc,", args, windows); // TODO err val
     exit(EXIT_FAILURE);
@@ -28,6 +28,7 @@ void pfd_insert(struct pollfd *pfds[], int new_fd, nfds_t *fd_count, nfds_t *nfd
     // set new pfds null
     for (nfds_t i = *fd_count; i < *nfds; i++) {
       (*pfds)[i].fd = -1;
+      (*pfds)[i].events = 0;
       (*pfds)[i].revents = 0;
     }
   }

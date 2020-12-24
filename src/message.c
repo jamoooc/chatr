@@ -70,7 +70,11 @@ int history_print(client_t *client, args_t *args, WINDOW **windows) {
 
 /* message_create */
 
-msg_t *message_create(char *message_body, args_t *args, WINDOW **windows) {
+int message_create(char *message_body, args_t *args, WINDOW **windows) {
+  if (args->active_client == NULL) {
+    return 1;
+  }
+
   // create packet for message struct
   packet_t *packet;
   if ((packet = malloc(sizeof(packet_t))) == NULL) {
@@ -93,18 +97,15 @@ msg_t *message_create(char *message_body, args_t *args, WINDOW **windows) {
   message->packet = packet;
   message->next = NULL;
 
-  return message;
-}
-
-/* message_append */
-
-void message_append(msg_t *new_message, msg_t **message_queue, WINDOW **windows) {
-  msg_t **msg = message_queue;
+  // add msg end of message_queue
+  msg_t **msg = args->message_queue;
   while (*msg != NULL) {
     msg = &(*msg)->next;
   }
-  new_message->next = *msg; // *msg is NULL
-  *msg = new_message;
+  message->next = *msg; // *msg is NULL
+  *msg = message;
+
+  return 0;
 }
 
 /* remove message from queue */

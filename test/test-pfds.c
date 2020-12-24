@@ -9,8 +9,13 @@ void test_pfd_create_array(void) {
   nfds_t nfds = N_PFDS;
   struct pollfd *pfds = pfd_create_array(nfds, args, windows);
 
-  // creates array
   TEST_ASSERT_NOT_NULL(pfds);
+  for (int i = 0; i < nfds; i++) {
+    TEST_ASSERT_EQUAL_INT(-1, pfds[i].fd);
+    TEST_ASSERT_EQUAL_INT(0, pfds[i].events);
+    TEST_ASSERT_EQUAL_INT(0, pfds[i].revents);
+  }
+
   // of size ?
   free(windows);
   free(args);
@@ -31,7 +36,7 @@ void test_pfd_insert(void) {
   int new_fd1 = 5;
   int new_fd2 = 6;
   int new_fd3 = 7;
-  // int new_fd4 = 8;
+  int new_fd4 = 8;
 
   pfd_insert(&pfds, new_fd1, &fd_count, &nfds);
   pfd_insert(&pfds, new_fd2, &fd_count, &nfds);
@@ -41,7 +46,15 @@ void test_pfd_insert(void) {
   TEST_ASSERT_EQUAL_INT(new_fd2, pfds[1].fd);
   TEST_ASSERT_EQUAL_INT(new_fd3, pfds[2].fd);
 
-  // test realloc by size of new array?
+  // will realloc if fd_count == nfds (new fds are -1)
+  pfd_insert(&pfds, new_fd4, &fd_count, &nfds);
+  TEST_ASSERT_EQUAL_INT(6, nfds); // doubles arr size
+
+  for (int i = 5; i < nfds; i++) {
+    TEST_ASSERT_EQUAL_INT(-1, pfds[i].fd);
+    TEST_ASSERT_EQUAL_INT(0, pfds[i].events);
+    TEST_ASSERT_EQUAL_INT(0, pfds[i].revents);
+  }
   
   free(windows);
   free(args);

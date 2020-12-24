@@ -24,6 +24,7 @@ PATHO = build/objs/
 PATHR = build/results/
 
 TARGET = chatr
+LOGFILE = logfile.txt
 TEST = build/tests.out
 TEST_RUNNER = test/test-runner.c
 
@@ -86,4 +87,4 @@ $(PATHR):
 	$(MKDIR) $(PATHR)
 
 clean:
-	rm -f $(TARGET) $(PATHO)*.o $(TEST) $(RESULTS)
+	rm -f $(TARGET) $(PATHO)*.o $(TEST) $(RESULTS) $(LOGFILE)

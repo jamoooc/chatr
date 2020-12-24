@@ -147,8 +147,7 @@ int main(int argc, char *argv[]) {
   client_free(args->client_list);
   message_free(args->message_queue);
   exit_screen(windows);
-  window_free(windows); // individuals windows
-  free(windows); // windows array
+  window_free(windows);
   endwin(); // end curses
   close(server_socket);
   exit(EXIT_SUCCESS);

@@ -131,8 +131,7 @@ void accept_connection(int server_socket, args_t *args, WINDOW **windows) {
   snprintf(username, 8, "user%i", client_socket);
 
   // add to client list and pfds
-  client_t *client = client_create(client_socket, username);
-  client_append(client, args, windows);
+  client_create(client_socket, username, args, windows);
   pfd_insert(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if only client, set to active user

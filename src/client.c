@@ -2,12 +2,11 @@
 
 /* client_create */
 
-client_t *client_create(int socket, char *username) {
+void client_create(int socket, char *username, args_t *args, WINDOW **windows) {
   // allocate memory for new client
   client_t *client;
   if ((client = malloc(sizeof(client_t))) == NULL) {
-    // TODO when merge with append
-    // handle_error(-1, "client_create", args, windows);
+    handle_error(-1, "client_create: malloc,", args, windows);
     exit(EXIT_FAILURE);
   }
 
@@ -19,18 +18,13 @@ client_t *client_create(int socket, char *username) {
   client->history = history_head;
   strcpy(client->username, username);
 
-  return client;
-}
-
-/* client_append to linked list */
-
-void client_append(client_t *new_client, args_t *args, WINDOW **windows) {
+  // client_append to linked list
   client_t **tmp = args->client_list;
   while (*tmp != NULL) {
     tmp = &(*tmp)->next;
   }
-  new_client->next = *tmp;  // *tmp is NULL
-  *tmp = new_client;
+  client->next = *tmp;  // *tmp is NULL
+  *tmp = client;
 
   client_print(args->active_client, args->client_list, windows);
 }
@@ -115,9 +109,8 @@ int client_connect(char *input, args_t *args, WINDOW **windows) {
   box(windows[INFO], 0, 0);
   wrefresh(windows[INFO]);
 
-  // add to client list and pfds
-  client_t *client = client_create(client_socket, username);
-  client_append(client, args, windows);
+  // add new client and pfds
+  client_create(client_socket, username, args, windows);
   pfd_insert(&args->pfds, client_socket, args->fd_count, args->nfds);
 
   // if no client, set to active client
@@ -285,31 +278,36 @@ void client_print(client_t *active_client, client_t **client_list, WINDOW **wind
 
 int client_free(client_t **client_list) {
   if (client_list == NULL) {
-    return 1; // TODO err msg? this is not really an err
+    return 1;
   }
+
   client_t *del, *client = *client_list;
   while(client != NULL) {
     del = client;
     client = del->next;
-    client_history_free(del->history);
+    client_history_free(&del->history);
     free(del);
   }
+
   *client_list = NULL;
+  client_list = NULL;
   return 0;
 }
 
 /* free client messages in queue */
 
-int client_history_free(history_t *history) {
-  if (history == NULL) {
+int client_history_free(history_t **history) {
+  if (*history == NULL) {
     return 1;
   }
-  history_t *del, *msg = history;
+
+  history_t *del, *msg = *history;
   while (msg != NULL) {
     del = msg;
     msg = del->next;
     free(del);
   }
-  history = NULL;
+
+  *history = NULL;
   return 0;
 }
